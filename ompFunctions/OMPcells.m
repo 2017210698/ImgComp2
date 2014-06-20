@@ -1,24 +1,28 @@
 function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
     fprintf('**********GOMP RUN**********\n');
-    H = Coef(1,:);
-    V = Coef(2,:);
-    D = Coef(3,:);
+    H = Coef(1,:); %#ok<NASGU>
+    V = Coef(2,:); %#ok<NASGU>
+    D = Coef(3,:); %#ok<NASGU>
     level   = Wpar.level;
     GAMMA   = cell(3,level);
     PSNR    = Kpar.targetPSNR;
     MSE     = 255^2*10^(-PSNR/10);
     band = {'H','V','D'};
     % for each level each dirction train dictionary
-    mm = size(GAMMA,1);
-    nn = size(GAMMA,2);
+    mm = size(GAMMA,1); % bands
+    nn = size(GAMMA,2); % wavelet levels
     count = 1;
-    if(Kpar.gomp_test) figure; suptitle('GOMP run test');end
+    if(Kpar.gomp_test) ;figure; suptitle('GOMP run test');end
     for j = 1:nn
         for i=1:mm
             name    =  sprintf('%s{%d}',band{i},j);
             Im      =  eval(name);
-            [X,m]   =  Im2colgomp(Im);
+            [X,m]   =  Im2colgomp(Im,j);
             R       =  Kpar.R; % dictionary reduandancy
+                % eligable reduandancy
+                NewR = (floor(sqrt(R*m)))^2/m;
+                fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,NewR);
+                R = NewR;
             dictLen =  R*m;
             phi = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD  = phi*Dict{i,j}; % Xr = phi*A*Gamma;
@@ -37,9 +41,8 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
     end
 end
 
-function [X,m] = Im2colgomp(Im)
-imLen  = size(Im,1); 
-if(imLen>=64)
+function [X,m] = Im2colgomp(Im,level)
+if(level<3)
     pSize = 8;
 else
     pSize = 4;

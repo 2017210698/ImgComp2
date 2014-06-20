@@ -8,7 +8,7 @@ close all;clear all;clc;
 Im= imread('barbara.gif');
 Imfig = figure();subplot(1,2,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 29;
+TargetPSNR = 30;
 
 %% Wavelet Transform
     % fixed param
@@ -39,19 +39,18 @@ TargetPSNR = 29;
     Kpar.targetPSNR = TargetPSNR;
     [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
     
-    % Reconstruction
-    Coef   = SparseToCoef(GAMMA,Dict);
-    Im_rec = WaveletDecode(Ap,Coef,Wpar);
-    % eval
     NNZ=0;
     for i=1:size(GAMMA,1)
         for j=1:size(GAMMA,2)
             NNZ=NNZ+nnz(GAMMA{i,j});
         end
     end
+    % Reconstruction
+    Coef   = SparseToCoef(GAMMA,Dict);
+    Im_rec = WaveletDecode(Ap,Coef,Wpar);
     MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
-    fprintf('PSNR after GOMP:%.2f, nnz(GAMMA):%d\n',PSNR,NNZ);
+    fprintf('PSNR after GOMP:%.2f\n',PSNR);
     figure();subplot(1,2,2);imshow(Im_rec,[]);title(sprintf('reconstrucion PSNR:%.2f',PSNR));
 
     

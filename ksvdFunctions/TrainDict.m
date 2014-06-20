@@ -1,10 +1,14 @@
-function [A,err] = TrainDict(B,Kpar)
-    PSNR  = Kpar.targetPSNR; 
-    [X,m] = GetPatches(B);
+function [A,err] = TrainDict(B,Kpar,level)
+    PSNR    = Kpar.targetPSNR; 
+    [X,m]   = GetPatches(B,level);
     R       = Kpar.R; % dictionary reduandancy
     perTdict= Kpar.perTdict;
-    dictLen = R*m;
     
+    % eligable reduandancy
+        NewR = (floor(sqrt(R*m)))^2/m;
+        fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,NewR);
+    R = NewR;
+    dictLen = R*m;
     params2d.iternum = Kpar.iternum;
     params2d.data = X;                                
     params2d.initA = speye(R*m);              
@@ -39,20 +43,16 @@ function [A,err] = TrainDict(B,Kpar)
     % TODO: review if more plots needed to see convergence
 end
 
-function [X,m] = GetPatches(B)
-imLen  = size(B,1); 
-if(imLen>=64)
+function [X,m] = GetPatches(B,level)
+if(level<3)
     pSize = 8;
+    X = im2col(B,[pSize pSize],'distinct');
 else
     pSize = 4;
-end
-    if(imLen>64)
-        X = im2col(B,[pSize pSize],'distinct');
-    else
-        X = im2col(B,[pSize pSize],'sliding');
-        while(length(X)<4*pSize^2)
-            X = [X,X];
-        end
+    X = im2col(B,[pSize pSize],'sliding');
+    while(length(X)<4*pSize^2)
+        X = [X,X]; %#ok<AGROW>
     end
+end
     m = pSize^2;
 end

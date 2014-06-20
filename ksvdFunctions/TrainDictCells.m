@@ -1,7 +1,7 @@
 function [Dict] = TrainDictCells(Coef,Kpar)
     % train dictionary for each level each directions
-    level = length(Coef);
-    Dict = cell(3,level);
+    level = size(Coef,2);
+    Dict  = cell(3,level);
     
     band = {'H','V','D'};
     % for each level each dirction train dictionary
@@ -14,7 +14,9 @@ function [Dict] = TrainDictCells(Coef,Kpar)
     for i = 1:level
         for j=1:m
             Kpar.name  = sprintf('%s{%d}',band{j},i);
-            [Dict{j,i},err] = TrainDict(Coef{j,i},Kpar);    
+            % train Dictionary
+            [Dict{j,i},err] = TrainDict(Coef{j,i},Kpar,i);   
+            % plots
             if(Kpar.plots)
                 subplot(level,m*2,count*2);plot(err); title(sprintf('%s S-KSVD error convergence',Kpar.name));xlabel('Iteration');ylabel('mean atom num');
                 DictNZ = Dict{j,i}(Dict{j,i}~=0);
