@@ -9,8 +9,15 @@ function   [Coef]  = SparseToCoef(GAMMA,Dict,Kpar)
             dictLen    = size(GAMMA{i,j},1);
             phi        = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD         = phi*Dict{i,j}; % Xr = phi*A*Gamma;
-            Coef{i,j}  = DD*GAMMA{i,j};
+            X          = DD*GAMMA{i,j};
+            Coef{i,j}  = col2Imgomp(X,m);
         end
     end
 end
 
+
+function [Im] = col2Imgomp(X,m)
+    pSize = sqrt(m);
+    oSize = sqrt(numel(X));
+    Im = col2im(X,[pSize pSize],[oSize oSize],'distinct');
+end

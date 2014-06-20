@@ -2,6 +2,7 @@ addpath('waveFunctions/');
 addpath('ksvdFunctions/');
 addpath('entropyFunctions/');
 addpath('ompFunctions/');
+close all;clear all;clc;
 %% get Image 
 
 Im= imread('barbara.gif');
@@ -13,7 +14,7 @@ TargetPSNR = 40;
     % fixed param
     Wpar.wavelet_name = 'sym8'; dwtmode('per','nodisp');  
     Wpar.plots = 1;
-    Wpar.level = 5;
+    Wpar.level = 4;
     % encode
     [Ap,Coef] = WaveletEncode(Im,Wpar);
     % Coef are H,V,D 2d wavelet coeffiencets in cell array
@@ -22,14 +23,15 @@ TargetPSNR = 40;
     Im_rec = WaveletDecode(Ap,Coef,Wpar);
     MSE    =  norm(double(Im)-Im_rec,'fro')/numel(Im);
     PSNR   =  10*log10(255^2/MSE);
+    fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdict  = 0.01;
+    Kpar.perTdict  = 0.14;
     Kpar.targetPSNR = TargetPSNR;
     Kpar.R         = 4; % dictionary reduandancy % TODO: first paramter to change
     Kpar.iternum   = 10;
     Kpar.printInfo = 1;
-    Kpar.plots     = 1;
+    Kpar.plots     = 0;
     Dict = TrainDictCells(Coef,Kpar);
     
 %% GOMP (Sparse representations) 
@@ -40,8 +42,9 @@ TargetPSNR = 40;
     % Reconstruction
     Coef   = SparseToCoef(GAMMA,Dict,Kpar);
     Im_rec = WaveletDecode(Ap,Coef,Wpar);
-    MSE    = norm(double(Im)-Im_rec,'fro')/numel(Im);
+    MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
+    figure();subplot(1,2,2);imshow(Im_rec,[]);title(sprintf('reconstrucion PSNR:%.2f',PSNR));
 
     
     
