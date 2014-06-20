@@ -3,6 +3,7 @@ addpath('ksvdFunctions/');
 addpath('entropyFunctions/');
 addpath('ompFunctions/');
 addpath('quantizFunctions/');
+%%
 close all;clear all;clc;
 %% get Image 
 
@@ -28,13 +29,23 @@ TargetPSNR = 30;
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdict  = 0.03;
+    Kpar.perTdict  = 0.02;
     Kpar.targetPSNR = TargetPSNR;
     Kpar.R         = 2; % dictionary reduandancy % TODO: first paramter to change
     Kpar.iternum   = 8;
     Kpar.printInfo = 1;
     Kpar.plots     = 0;
     Dict = TrainDictCells(Coef,Kpar);
+%% Normalize Dictionaries (degree of freedom)
+    for i=1:size(Dict,1)
+        for j=1:size(Dict,2)
+            for row=1:size(Dict{i,j},1)      
+                if(max(abs(Dict{i,j}(:)))>1)
+                    Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
+                end
+            end
+        end
+    end
     
 %% GOMP (Sparse representations) 
     Kpar.gomp_test =1;
@@ -44,7 +55,8 @@ TargetPSNR = 30;
     % Reconstruction
     tmpCoef   = SparseToCoef(GAMMA,Dict);
     Im_rec    = WaveletDecode(Ap,tmpCoef,Wpar);
-    % eval
+    
+    % eval 
     NNZG    = cellArrayNNZ(GAMMA);
     NNZD    = cellArrayNNZ(Dict);
     MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
@@ -57,14 +69,28 @@ TargetPSNR = 30;
     Qpar.GAMMAbins = 2^5;
     Qpar.Dictbins  = 2^5;
     Qpar.infoDyRange = 1;
+%     GAMMA{1,1}=double(Im(1:20,1:20));
+%     GAMMA= cell(2,1);
+%     GAMMA{1} = [1,2,3,40];
+%     GAMMA{2} = [-4,1,2,10;-5,9,-2,1];
+%     dbstop in QuantizeGAMMA;
+    [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
+    [Dictq ,DictNegSigns]            = QuantizeDict(Dict,Qpar);
     
-    [GAMMA]  = QuantizeGAMMA(GAMMA,Qpar); 
+    % Reconstruction
+    GAMMAt = DeQuantizeGAMMA(GAMMA,GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar);
+    Dictt  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar);
+    tmpCoef   = SparseToCoef(GAMMAt,Dictt);
+    Im_rec    = WaveletDecode(Ap,tmpCoef,Wpar);
     
+    % eval
+    NNZG    = cellArrayNNZ(GAMMAq);
+    NNZD    = cellArrayNNZ(Dictq);
+    MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
+    PSNR   = 10*log10(255^2/MSE);
+    fprintf('  Quant PSNR :%.2f, nnz(GAMMAq):%d, nnz(Dictq):%d, Tot=%d\n',PSNR,NNZG,NNZD,NNZD+NNZG);
+    figure(f1);subplot(f1m,f1n,3);imshow(Im_rec,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
     
-
-
-
-
 
 
 

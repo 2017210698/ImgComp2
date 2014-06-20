@@ -27,7 +27,10 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
             phi = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD  = phi*Dict{i,j}; % Xr = phi*A*Gamma;
             epsilon = sqrt(MSE*numel(X));
+            % GOMP RUN
             GAMMA{i,j} = gomp(DD,X,'error',epsilon);
+            
+            % plot reconstruction results
             if(Kpar.gomp_test)
                Xr   = DD*GAMMA{i,j};
                pMSE  = norm(Xr-X,'fro')^2/numel(X);

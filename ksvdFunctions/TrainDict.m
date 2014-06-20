@@ -15,11 +15,12 @@ function [A,err] = TrainDict(B,Kpar,level)
     params2d.basedict{1} = odctdict(sqrt(m),sqrt(dictLen));   
     params2d.basedict{2} = odctdict(sqrt(m),sqrt(dictLen));         
      
-    % ask to train each patch under compression PSNR
+    % Train each patch under TargetPSNR ->MSE->Edata
     params2d.Tdict   = ceil(perTdict*dictLen);  
     MSE = 255^2*10^(-PSNR/10);
-    params2d.Edata = sqrt(MSE*m); %TODO: ksvd experiment to verify that
+    params2d.Edata = sqrt(MSE*m); 
     
+    % Sparse KSVD RUN
     [A,~,err] = ksvds(params2d);
     if(max(isnan(full(A(:))))) 
         error('KSVD A output NaN for some indicies');
@@ -40,7 +41,6 @@ function [A,err] = TrainDict(B,Kpar,level)
                     ,nnz(A)/numel(A) ...
                     );                
     end
-    % TODO: review if more plots needed to see convergence
 end
 
 function [X,m] = GetPatches(B,level)

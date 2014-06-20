@@ -1,15 +1,15 @@
-function DynamicRangeStats(GAMMA)
-    level = size(GAMMA,2);
-    mm    = 3; 
+function DynamicRangeStats(X,Xname)
+    level = size(X,2);
+    mm    = size(X,1); 
     band = {'H','V','D'};
-    fprintf('******GAMMAS Dynamic Range stats******\n');
+    fprintf('******%s Dynamic Range stats******\n',Xname);
     names  = cell(level*mm,1);
     DR_vec = zeros(level*mm,1);
     iter   = 1;
     for j=1:level
         for i=1:mm
             name  = sprintf('%s{%d}',band{i},j);
-            DR = DynamicRange(GAMMA{i,j},'abs');
+            DR = DynamicRange(X{i,j},'abs');
             names{iter}  = name;
             DR_vec(iter) = DR;
             iter = iter+1;               
@@ -18,8 +18,9 @@ function DynamicRangeStats(GAMMA)
     
     [~,ind] = sort(DR_vec);
     for i=1:level*mm
-        fprintf('%s: abs(GAMMA) DR:%.2f\n'...
+        fprintf('%s: abs(%s) DR:%.2f\n'...
                ,names {ind(i)}...
+               ,Xname...
                ,DR_vec(ind(i)));
     end
  end
