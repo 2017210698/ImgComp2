@@ -18,11 +18,8 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
             name    =  sprintf('%s{%d}',band{i},j);
             Im      =  eval(name);
             [X,m]   =  Im2colgomp(Im,j);
-            R       =  Kpar.R; % dictionary reduandancy
-                % eligable reduandancy
-                NewR = (floor(sqrt(R*m)))^2/m;
-                fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,NewR);
-                R = NewR;
+            R       =  DictRedundancy(Kpar.R,m); % dictionary reduandancy
+                fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
             dictLen =  R*m;
             phi = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD  = phi*Dict{i,j}; % Xr = phi*A*Gamma;
