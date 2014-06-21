@@ -1,5 +1,8 @@
 function [GAMMA,Dict,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMA,Dict,GAMMANegSigns,DictNegSigns,Opar)
     plots = Opar.plots;
+    order = Opar.order; % if 'Dict':by dict column population descend
+                        % if 'GAMMA': by Gamma row population descend
+    
     level  = size(GAMMA,2);
     mm     = size(GAMMA,1);
     
@@ -10,8 +13,8 @@ function [GAMMA,Dict,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMA,Dict,GAMMAN
         band = {'H','V','D'};
         count=1;
         figure(); suptitle('Alter row and col results sample');
-        ploti = randi(mm   ,1,m);
-        plotj = randi(level,1,m);
+        ploti = randi(mm,1,m);
+        plotj = randperm(level); plotj = plotj(1:m);
         plotj = sort(plotj);
     end
     
@@ -22,9 +25,16 @@ function [GAMMA,Dict,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMA,Dict,GAMMAN
            GAMNE = GAMMANegSigns{i,j};
            DIC = Dict{i,j}; 
            DICNE = DictNegSigns{i,j};
+           if(strcmp(order,'GAMMA'))
+               % reorder by GAMMA row descending order
+                 NNZ = GAM~=0;
+                 NNZ = sum(NNZ,2);
+           elseif(strcmp(order,'Dict'))
+               % reorder by A columns descending order
+                 NNZ = DIC~=0;
+                 NNZ = sum(NNZ,1);
+           end
            
-           NNZ = GAM~=0;
-           NNZ = sum(NNZ,2);
            [~,ind] = sort(NNZ,'descend');
            
            for k=1:length(ind)

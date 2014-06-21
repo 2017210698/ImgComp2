@@ -4,6 +4,7 @@ addpath('entropyFunctions/');
 addpath('ompFunctions/');
 addpath('quantizFunctions/');
 addpath('optimizeFunctions/');
+addpath('sparseMatrixFunctions/');
 %%
 close all;clear all;clc;
 %% get Image 
@@ -30,7 +31,7 @@ TargetPSNR = 30;
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdict  = 0.02;
+    Kpar.perTdict  = 0.32;
     Kpar.targetPSNR = TargetPSNR;
     Kpar.R         = 2; % dictionary reduandancy % TODO: first paramter to change
     Kpar.iternum   = 8;
@@ -90,16 +91,31 @@ TargetPSNR = 30;
     
 %% Optimazie Gamma
     Opar.plots = 1;
+    Opar.order = 'GAMMA'; % gamma columned descend population
+    dbstop in AlterRowCol
     [GAMMAq,Dictq,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMAq,Dictq,GAMMANegSigns,DictNegSigns,Opar);
     
     % Reconstruction
     GAMMAt = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar);
     Dictt  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar);
-    tmpCoef   = SparseToCoef(GAMMAt,Dictt);
+    tmpCoef   = SparseToCoef(GAMMAt,Dictt); 
     Im_rec    = WaveletDecode(Ap,tmpCoef,Wpar);
     
     % eval
     MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
     fprintf('  Optim PSNR :%.2f\n',PSNR);
+    
+%% CCS (Coulmned compressed GAMMA,Dict)
+    CssGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns)
+
+    
+
+
+    
+%% Location indicies separation 
+
+
+
+    
     
