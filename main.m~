@@ -101,5 +101,6 @@ TargetPSNR = 30;
     % eval
     MSE    = norm(double(Im)-Im_rec,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
-    fprintf('  Optim PSNR :%.2f\n',PSNR);
+    fprintf('Optimize PSNR :%.2f\n',PSNR);
+    figure(f1);subplot(f1m,f1n,4);imshow(Im_rec,[]);title(sprintf('Optim reconstrucion PSNR:%.2f',PSNR));
     

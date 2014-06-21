@@ -1,4 +1,4 @@
-function GAMMA = DeQuantizeGAMMA(a,GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar)
+function GAMMA = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar)
     bins   = Qpar.GAMMAbins;
     level  = size(GAMMAq,2);
     band   = {'H','V','D'};
