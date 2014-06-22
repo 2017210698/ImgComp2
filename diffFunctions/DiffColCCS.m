@@ -1,4 +1,4 @@
-function [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffCol(GAMMArow,GAMMAcol)
+function [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffColCCS(GAMMArow,GAMMAcol)
 
     
     GAMMAdiffCol  = cell(size(GAMMArow));
@@ -19,7 +19,7 @@ function [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffCol(GAMMArow,GAMMAcol)
             DIFCOLT = DIFCOL(DIFCOL~=0); 
 
             START  = zeros(1,length(DIFCOLT));
-            DIF    = zeros(1,length(sum(DIFCOLT)-length(DIFCOLT)));
+            DIF    = zeros(1,sum(DIFCOLT)-length(DIFCOLT));
 
             iter  =1;
             iter2 =1;
@@ -33,8 +33,8 @@ function [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffCol(GAMMArow,GAMMAcol)
                    iter      = iter+1;
                 end
                 % save start index
-                START(k) = TMP(1);
-                TMPD     = diff(TMP);
+                START(k) = TMPROW(1);
+                TMPD     = diff(TMPROW);
                 % add diff to DIF vector
                 for t=1:length(TMPD)
                     DIF(iter2)=TMPD(t);
