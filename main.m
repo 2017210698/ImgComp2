@@ -124,8 +124,8 @@ TargetPSNR = 30;
     ENTD = cellArrayEntropy(Dictval,Dictneg,Dictrow,Dictcol);
     MSE    = norm(double(Im)-Im_rec3,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
-    fprintf(' CSS   PSNR:%.2f numel(GAMMAinfo):%d,numel(DICTinfo):%d,Tot:%d',PSNR,NNZG,NNZD,NNZG+NNZD);
-    fprintf('  H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD); 
+    fprintf(' CSS   PSNR:%.2f numel(GAMMAinfo):%d,numel(DICTinfo):%d,Tot:%d\n',PSNR,NNZG,NNZD,NNZG+NNZD);
+    fprintf(' CSS       H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD); 
 %% Diff Code (for GAMMAcol ,Dictcol)
 
     [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffColCCS(GAMMArow,GAMMAcol);
@@ -144,14 +144,12 @@ TargetPSNR = 30;
     Im_rec4    = WaveletDecode(Ap,tmpCoef4,Wpar);
     
     % eval
-    NNZG = cellArrayNNZ(GAMMAval,GAMMAneg,GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow,GAMMAqMAX);
-    NNZD = cellArrayNNZ(Dictval,Dictneg,DictdiffCol,DictRowStart,DictdiffRow);
     ENTG = cellArrayEntropy(GAMMAval,GAMMAneg,GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow);
     ENTD = cellArrayEntropy(Dictval,Dictneg,DictdiffCol,DictRowStart,DictdiffRow);
     MSE    = norm(double(Im)-Im_rec4,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
-    fprintf(' DIFF  PSNR:%.2f numel(GAMMAinfo):%d,numel(DICTinfo):%d,Tot:%d',PSNR,NNZG,NNZD,NNZG+NNZD);
-    fprintf('  H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD);
+    fprintf(' DIFF  PSNR:%.2f\n',PSNR);
+    fprintf(' DIFF      H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD);
 %% Entropy Encode    
     
     
