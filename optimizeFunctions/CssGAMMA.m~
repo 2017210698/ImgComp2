@@ -36,7 +36,6 @@ function  [GAMMAval,GAMMAneg,GAMMArow,GAMMAcol]= CssGAMMA(GAMMA,GAMMANegSigns)
                     end
                 end
             end
-            COL(end)=valIter;
             % return css form
             GAMMAval{i,j} = VALS;
             GAMMAneg{i,j} = NEGS;

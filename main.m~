@@ -107,15 +107,14 @@ TargetPSNR = 30;
 %%  CCS (Coulmned compressed GAMMA,Dict) 
 
     [GAMMAval,GAMMAneg,GAMMArow,GAMMAcol]= CssGAMMA(GAMMAq,GAMMANegSigns);
-    [Dictval,Dictneg,Dictrow,Dictcol]    = CssDict (Dictq,DictNegSigns); 
+
     
-    % TODO: insert stats about val neg row nnz
     
     % Reconstruction 
     [GAMMAq2,GAMMANegSigns2] = DeCssGAMMA(GAMMAval,GAMMAneg,GAMMArow,GAMMAcol,Kpar);
-    [Dictq2,DictNegSigns2  ] = DeCssDict (Dictval,Dictneg,Dictrow,Dictcol,Kpar);
+
     GAMMAt = DeQuantizeGAMMA(GAMMAq2,GAMMAqMAX,GAMMANegSigns2,Qpar);
-    Dictt  = DeQuantizeDict (Dictq2 ,DictNegSigns2,Qpar);
+    Dictt  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar);
     tmpCoef   = SparseToCoef(GAMMAt,Dictt); 
     Im_rec    = WaveletDecode(Ap,tmpCoef,Wpar);
     

@@ -14,12 +14,13 @@ function Dict  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar)
                 Dict{i,j}(row,:) = quant(Dictq{i,j}(row,:)+1);
                 % recover signs
                 ind  = DictNegSigns{i,j}(row,:);
+                ind  = ind~=0;
                 Dict{i,j}(row,ind) = -Dict{i,j}(row,ind);
             end
         end
     end
     
     % recover signs
-     Dict{i,j}(DictNegSigns{i,j})=-Dict{i,j}(DictNegSigns{i,j});
+%      Dict{i,j}(DictNegSigns{i,j})=-Dict{i,j}(DictNegSigns{i,j});
 end
 

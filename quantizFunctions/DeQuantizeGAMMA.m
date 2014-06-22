@@ -13,6 +13,7 @@ function GAMMA = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar)
                GAMMA{i,j}(:,col) = quant(GAMMAq{i,j}(:,col)+1);
                % recover signs
                ind  = GAMMANegSigns{i,j}(:,col);
+               ind  = ind~=0;
                GAMMA{i,j}(ind,col) = -GAMMA{i,j}(ind,col);
             end
         end

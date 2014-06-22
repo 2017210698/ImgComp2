@@ -22,6 +22,7 @@ function [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar)
             end
             GAMMAqMAX{i,j}=MAX;
             GAMMANegSigns{i,j}= NegSigns;
+            GAMMANegSigns{i,j}(GAMMAq{i,j}==0)=0;
         end
     end
 end
