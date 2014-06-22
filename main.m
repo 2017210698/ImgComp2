@@ -4,6 +4,8 @@ addpath('entropyFunctions/');
 addpath('ompFunctions/');
 addpath('quantizFunctions/');
 addpath('optimizeFunctions/');
+addpath('quantizFunctions/');
+addpath('diffFunctions/');
 %% 
 close all;clear all;clc;
 %% get Image 
@@ -32,7 +34,7 @@ TargetPSNR = 30;
 %% Sparse KSVD (Train Dictionaries)
     Kpar.perTdict  = 0.02;
     Kpar.targetPSNR = TargetPSNR;
-    Kpar.R         = 1; % dictionary reduandancy % TODO: first paramter to change
+    Kpar.R         = 2; % dictionary reduandancy % TODO: first paramter to change
     Kpar.iternum   = 8;
     Kpar.printInfo = 1;
     Kpar.plots     = 0;
@@ -41,21 +43,19 @@ TargetPSNR = 30;
     for i=1:size(Dict,1)
         for j=1:size(Dict,2)
             for row=1:size(Dict{i,j},1)      
-                if(max(abs(Dict{i,j}(:)))>1)
-                    Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
-                end
+                Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
             end
         end
     end
     
 %% GOMP (Sparse representations) 
     Kpar.gomp_test =1;
-    Kpar.targetPSNR = 30;
+    Kpar.targetPSNR = TargetPSNR;
     [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
     
     % Reconstruction
-    tmpCoef   = SparseToCoef(GAMMA,Dict);
-    Im_rec    = WaveletDecode(Ap,tmpCoef,Wpar);
+    Coef   = SparseToCoef(GAMMA,Dict);
+    Im_rec    = WaveletDecode(Ap,Coef,Wpar);
     
     % eval 
     NNZG    = cellArrayNNZ(GAMMA);
@@ -67,8 +67,8 @@ TargetPSNR = 30;
     figure(f1);subplot(f1m,f1n,2);imshow(Im_rec,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
 
 %% Quantization (GAMMA,Dict)
-    Qpar.GAMMAbins = 2^5;
-    Qpar.Dictbins  = 2^5;
+    Qpar.GAMMAbins = 2^6;
+    Qpar.Dictbins  = 2^6;
     Qpar.infoDyRange = 1;
 
     [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
@@ -124,7 +124,9 @@ TargetPSNR = 30;
     PSNR   = 10*log10(255^2/MSE);
     fprintf('  CSS   PSNR :%.2f\n',PSNR);
     
-    
+%% Diff Code (for GAMMAcol ,Dictcol)
 
-    
+[GAMMAcolStart,GAMMAcolDiff] = DiffCol(GAMMArow,GAMMAcol);
+
+Entropy    
     
