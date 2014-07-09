@@ -6,6 +6,8 @@ addpath('quantizFunctions/');
 addpath('optimizeFunctions/');
 addpath('quantizFunctions/');
 addpath('diffFunctions/');
+addpath('generalFunctions/');
+addpath('arithcoFunctions/');
 %% 
 close all;clear all;clc;
 %% get Image 
@@ -14,7 +16,7 @@ Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 30;
+TargetPSNR = 40;
 
 %% Wavelet Transform
     % fixed param
@@ -32,7 +34,7 @@ TargetPSNR = 30;
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdict  = 0.02;
+    Kpar.perTdict  = 0.05;
     Kpar.targetPSNR = TargetPSNR;
     Kpar.R         = 3; % dictionary reduandancy % TODO: first paramter to change
     Kpar.iternum   = 8;
@@ -105,7 +107,7 @@ TargetPSNR = 30;
     fprintf(' Optim PSNR:%.2f\n',PSNR);
     
 %%  CCS (Coulmned compressed GAMMA,Dict) 
-
+%     dbstop in CssGAMMA
     [GAMMAval,GAMMAneg,GAMMArow,GAMMAcol]= CssGAMMA(GAMMAq,GAMMANegSigns);
     [Dictval,Dictneg,Dictrow,Dictcol]    = CssDict (Dictq,DictNegSigns); 
     
@@ -124,10 +126,10 @@ TargetPSNR = 30;
     ENTD = cellArrayEntropy(Dictval,Dictneg,Dictrow,Dictcol);
     MSE    = norm(double(Im)-Im_rec3,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
-    fprintf(' CSS   PSNR:%.2f numel(GAMMAinfo):%d,numel(DICTinfo):%d,Tot:%d',PSNR,NNZG,NNZD,NNZG+NNZD);
-    fprintf(' CSS   H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD); 
+    fprintf(' CSS   PSNR:%.2f numel(GAMMAinfo):%d,numel(DICTinfo):%d,Tot:%d\n',PSNR,NNZG,NNZD,NNZG+NNZD);
+    fprintf(' CSS       H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD); 
 %% Diff Code (for GAMMAcol ,Dictcol)
-
+%     dbstop in DiffColCCS
     [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffColCCS(GAMMArow,GAMMAcol);
     [DictdiffCol,DictRowStart,DictdiffRow   ] = DiffColCCS(Dictrow ,Dictcol);
 
@@ -144,14 +146,38 @@ TargetPSNR = 30;
     Im_rec4    = WaveletDecode(Ap,tmpCoef4,Wpar);
     
     % eval
-    NNZG = cellArrayNNZ(GAMMAval,GAMMAneg,GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow,GAMMAqMAX);
-    NNZD = cellArrayNNZ(Dictval,Dictneg,DictdiffCol,DictRowStart,DictdiffRow);
     ENTG = cellArrayEntropy(GAMMAval,GAMMAneg,GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow);
     ENTD = cellArrayEntropy(Dictval,Dictneg,DictdiffCol,DictRowStart,DictdiffRow);
     MSE    = norm(double(Im)-Im_rec4,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
     fprintf(' DIFF  PSNR:%.2f\n',PSNR);
-    fprintf(' DIFF  H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD);
-%% Entropy Encode    
+    fprintf(' DIFF      H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD);
+%% What is for entropy code and what to save
+    fprintf('****vars to entropy code*****\n');
+        whos('GAMMAval','GAMMAneg','GAMMAdiffCol','GAMMARowStart','GAMMAdiffRow');
+        whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
+%% Entropy Encode
+close all;
+    bins = Qpar.GAMMAbins;
+%     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
+%     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+% dbstop in EntropyEncodeVals
+[GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
+[GAMMAnegcode] = Cell2CONT(GAMMAneg);
+
+
+
+[GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,6);
+[GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
+
+
+isequal(GAMMAval5,GAMMAval)
+%% 
+close all;
+    bins = Qpar.Dictbins;
+    ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);
+    ShowHist(Dictval,'Dictval',Dictneg,'Dictneg',bins);
+%%
+    
     
     
