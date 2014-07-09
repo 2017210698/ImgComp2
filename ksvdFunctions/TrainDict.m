@@ -1,11 +1,14 @@
 function [A,err] = TrainDict(B,Kpar,level)
     PSNR    = Kpar.targetPSNR; 
     [X,m]   = GetPatches(B,level);
-    R       = DictRedundancy(Kpar.R,m); % dictionary reduandancy
-    perTdict= Kpar.perTdict;
-    % eligable reduandancy
-    fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
-   
+    if(level<3)
+        perTdict = Kpar.perTdictBig;
+        Rtmp     = Kpar.Rbig;
+    else
+        perTdict = Kpar.perTdictSmall;
+        Rtmp     = Kpar.Rsmall;
+    end
+    R       = DictRedundancy(Rtmp,m); % dictionary reduandancy
     dictLen = R*m;
     params2d.iternum = Kpar.iternum;
     params2d.data = X;                                
@@ -44,10 +47,10 @@ end
 function [X,m] = GetPatches(B,level)
     
 if(level<3)
-    pSize = 8;
+    pSize = PatchSize(level);%8
     X = im2col(B,[pSize pSize],'distinct');
 else
-    pSize = 4;
+    pSize = PatchSize(level);%4
     X = im2col(B,[pSize pSize],'sliding');
     while(length(X)<4*pSize^2)
         X = [X,X]; %#ok<AGROW>

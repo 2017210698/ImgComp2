@@ -16,7 +16,8 @@ Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 40;
+TargetPSNR = 30;
+TrainPSNR  = 32;
 
 %% Wavelet Transform
     % fixed param
@@ -34,9 +35,11 @@ TargetPSNR = 40;
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdict  = 0.05;
-    Kpar.targetPSNR = TargetPSNR;
-    Kpar.R         = 3; % dictionary reduandancy % TODO: first paramter to change
+    Kpar.perTdictBig   = 0.02;
+    Kpar.perTdictSmall = 0.02;
+    Kpar.Rbig          = 2.5;
+    Kpar.Rsmall       = 2.5;
+    Kpar.targetPSNR = TrainPSNR;
     Kpar.iternum   = 8;
     Kpar.printInfo = 1;
     Kpar.plots     = 0;
@@ -156,21 +159,24 @@ TargetPSNR = 40;
     fprintf('****vars to entropy code*****\n');
         whos('GAMMAval','GAMMAneg','GAMMAdiffCol','GAMMARowStart','GAMMAdiffRow');
         whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
+        whos('Ap');
 %% Entropy Encode
     bins = Qpar.GAMMAbins;
-%     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
-%     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+    ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
+    ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+%%
 % dbstop in EntropyEncodeVals
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
+[GAMMARowStartcode,GAMMARowStartcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 
-
+% dictLen = MaxDictLen();
 
 [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,6);
 [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
 
-
 isequal(GAMMAval5,GAMMAval)
+isequal(GAMMAneg5,GAMMAneg)
 %% 
     bins = Qpar.Dictbins;
 %     ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);

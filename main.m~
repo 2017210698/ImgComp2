@@ -156,27 +156,27 @@ TargetPSNR = 40;
     fprintf('****vars to entropy code*****\n');
         whos('GAMMAval','GAMMAneg','GAMMAdiffCol','GAMMARowStart','GAMMAdiffRow');
         whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
+        whos('Ap');
 %% Entropy Encode
-close all;
     bins = Qpar.GAMMAbins;
-%     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
-%     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+    ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
+    ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+%%
 % dbstop in EntropyEncodeVals
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
-
+[GAMMARowStartcode,GAMMARowStartcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 
 
 [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,6);
 [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
 
-
 isequal(GAMMAval5,GAMMAval)
+isequal(GAMMAneg5,GAMMAneg)
 %% 
-close all;
     bins = Qpar.Dictbins;
-    ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);
-    ShowHist(Dictval,'Dictval',Dictneg,'Dictneg',bins);
+%     ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);
+%     ShowHist(Dictval,'Dictval',Dictneg,'Dictneg',bins);
 %%
     
     
