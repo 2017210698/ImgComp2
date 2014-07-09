@@ -159,29 +159,74 @@ TrainPSNR  = 32;
     fprintf('****vars to entropy code*****\n');
         whos('GAMMAval','GAMMAneg','GAMMAdiffCol','GAMMARowStart','GAMMAdiffRow');
         whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
+        whos('GAMMAqMAX');
         whos('Ap');
-%% Entropy Encode
-    bins = Qpar.GAMMAbins;
-    ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
-    ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
-%%
-% dbstop in EntropyEncodeVals
+%% Entropy Encode (GAMMA)
+bins = Qpar.GAMMAbins;
+%     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
+%     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
+
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
-[GAMMARowStartcode,GAMMARowStartcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins);
 
-% dictLen = MaxDictLen();
+dictLen = DictSize(0,Kpar);% max dict len
+[GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen);
+[GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen);
 
-[GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,6);
+GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);
+[GAMMAdiffColcode,GAMMAdiffColcounts] = EntropyEncodediffCol(GAMMAdiffCol,GAMMACOLBINS);
+
+[GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,Wpar.level);
 [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
+[GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,Wpar.level);
+[GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,Wpar.level);
+[GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,Wpar.level);
 
-isequal(GAMMAval5,GAMMAval)
-isequal(GAMMAneg5,GAMMAneg)
-%% 
+GAMMAentValid = zeros(1,5);
+GAMMAentValid(1) = isequal(GAMMAval5,GAMMAval);
+GAMMAentValid(2) = isequal(GAMMAneg5,GAMMAneg);
+GAMMAentValid(3) = isequal(GAMMARowStart5,GAMMARowStart);
+GAMMAentValid(4) = isequal(GAMMAdiffRow5,GAMMAdiffRow);
+GAMMAentValid(5) = isequal(GAMMAdiffCol5,GAMMAdiffCol);
+
+if(min(GAMMAentValid)==1)
+    fprintf('******ENTROPY encoding TEST PASS (GAMMA)******\n')
+else
+    error('ERR: **ENTROPY encoding TEST FAILED (GAMMA)**')
+end
+%% Entropy Encode (Dict)
     bins = Qpar.Dictbins;
 %     ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);
 %     ShowHist(Dictval,'Dictval',Dictneg,'Dictneg',bins);
-%%
+
+[Dictvalcode,Dictvalcounts,Dictvallen] = EntropyEncodeVals(Dictval,bins);
+[Dictnegcode] = Cell2CONT(Dictneg);
+
+dictLen = DictSize(0,Kpar);% max dict len
+[DictRowStartcode,DictRowStartcounts,DictRowStartlen] = EntropyEncodeVals(DictRowStart,dictLen);
+[DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen);
+
+DictCOLBINS = CELLARRMAX(DictdiffCol);
+[DictdiffColcode,DictdiffColcounts] = EntropyEncodediffCol(DictdiffCol,DictCOLBINS);
+
+[Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,Wpar.level);
+[Dictneg5] = CONT2Cell(Dictnegcode,Dictval5);
+[DictRowStart5] = EntropyDecodeVals(DictRowStartcode,DictRowStartcounts,DictRowStartlen,dictLen,Wpar.level);
+[DictdiffRow5 ] = EntropyDecodediffRow(DictdiffRowcode,DictdiffRowcounts,DictRowStart5,Dictval5,Wpar.level);
+[DictdiffCol5 ] = EntropyDecodediffColDict(DictdiffColcode,DictdiffColcounts,Wpar.level,Kpar);
+
+DictentValid = zeros(1,5);
+DictentValid(1) = isequal(Dictval5,Dictval);
+DictentValid(2) = isequal(Dictneg5,Dictneg);
+DictentValid(3) = isequal(DictRowStart5,DictRowStart);
+DictentValid(4) = isequal(DictdiffRow5,DictdiffRow);
+DictentValid(5) = isequal(DictdiffCol5,DictdiffCol);
+
+if(min(DictentValid)==1)
+    fprintf('******ENTROPY encoding TEST PASS (Dict) ******\n')
+else
+    error('ERR: **ENTROPY encoding TEST FAILED (Dict) **')
+end
     
     
     
