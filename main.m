@@ -17,8 +17,8 @@ Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 20;
-TrainPSNR  = 22;
+TargetPSNR = 30;
+TrainPSNR  = 32;
 
 %% Wavelet Transform
     % fixed param
@@ -294,11 +294,30 @@ countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
           
 COUNTVARSLEN  = zeros(size(codevars));
 COUNTVARSHEDLEN = 0;  
-for i=1:length(codevars)
-    eval(sprintf('COUNTS=%s;',codevars{i}));
+for i=1:length(countsvars)
+    eval(sprintf('COUNTS=%s;',countsvars{i}));
     [COUNTVARSLEN(i),HEDTMP] = write_counts2file (COUNTS,fid,DEFAULTBINS);
     COUNTVARSHEDLEN = COUNTVARSHEDLEN + HEDTMP;
 end
+
+GAMNAMAXLEN = 0;
+for i=1:size(GAMMAqMAX,1)
+    for j=1:size(GAMMAqMAX,2)
+        GAMMAXq = GAMMAqMAX{i,j};
+        fwrite(fid,GAMMAXq,'single'); 
+        GAMNAMAXLEN = GAMNAMAXLEN + 4;
+    end
+end
+
+APLEN = 0;
+for i=1:size(Ap,1)
+    for j=1:size(Ap,2)
+        fwrite(fid,Ap(i,j),'single'); 
+        APLEN = APLEN+ 4;
+    end
+end
+     
+
 
 filesize = ftell(fid)
 fclose(fid);
