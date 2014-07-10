@@ -8,6 +8,7 @@ addpath('quantizFunctions/');
 addpath('diffFunctions/');
 addpath('generalFunctions/');
 addpath('arithcoFunctions/');
+addpath('fileFunctions/');
 %% 
 close all;clear all;clc;
 %% get Image 
@@ -155,12 +156,11 @@ TrainPSNR  = 32;
     PSNR   = 10*log10(255^2/MSE);
     fprintf(' DIFF  PSNR:%.2f\n',PSNR);
     fprintf(' DIFF      H(GAMMAinfo):%d,H(DICTinfo):%d\n',ENTG,ENTD);
-%% What is for entropy code and what to save
+%% What is for entropy code 
     fprintf('****vars to entropy code*****\n');
         whos('GAMMAval','GAMMAneg','GAMMAdiffCol','GAMMARowStart','GAMMAdiffRow');
         whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
-        whos('GAMMAqMAX');
-        whos('Ap');
+        
 %% Entropy Encode (GAMMA)
 bins = Qpar.GAMMAbins;
 %     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
@@ -228,5 +228,65 @@ else
     error('ERR: **ENTROPY encoding TEST FAILED (Dict) **')
 end
     
+%% What is for file Writing
+    fprintf('****vars to file write code*****\n');
+       whos('GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode',...
+            'GAMMAdiffRowcode','GAMMAdiffColcode',...
+            'Dictvalcode','Dictnegcode','DictRowStartcode',...
+            'DictdiffRowcode','DictdiffColcode'...
+            );
+        
+        whos('GAMMAvalcounts','GAMMARowStartcounts',...
+             'GAMMAdiffRowcounts','GAMMAdiffColcounts',...
+             'Dictvalcounts','DictRowStartcounts',...
+             'DictdiffRowcounts','DictdiffColcounts'...
+              );
+        whos('GAMMAvalcode','GAMMAvalcounts','GAMMAvallen','GAMMAnegcode',...
+             'GAMMARowStartcode','GAMMARowStartcounts','GAMMARowStartlen',...
+             'GAMMAdiffRowcode','GAMMAdiffRowcounts',...
+             'GAMMAdiffColcode','GAMMAdiffColcounts');
+        whos('Dictvalcode','Dictvalcounts','Dictvallen','Dictnegcode',...
+             'DictRowStartcode','DictRowStartcounts','DictRowStartlen',...
+             'DictdiffRowcode','DictdiffRowcounts',...
+             'DictdiffColcode','DictdiffColcounts');  
+        whos('GAMMAqMAX');
+        whos('Ap');
+        
+%% Write File and save stats
+filename = 'im1';
+
+
+fid    = fopen(filename,'w');
+
+CODEHED = 0;
+codevars = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
+           ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
+           ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
+           ,'DictdiffRowcode','DictdiffColcode'...
+            };
+        
+CODELEN  = zeros(size(codevars));
+CODEHEDLEN = 0;           
+for i=1:length(codevars)
+    eval(sprintf('stream=%s;',codevars{i}));
+    [CODELEN(i),HEDTMP] = write_stream2file (stream,fid);
+    CODEHEDLEN = CODEHEDLEN + HEDTMP;
+end
+
+countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
+              'GAMMAdiffRowcounts','GAMMAdiffColcounts',...
+              'Dictvalcounts','DictRowStartcounts',...
+              'DictdiffRowcounts','DictdiffColcounts',...
+              };
+
+
+
+filesize = ftell(fid)
+fclose(fid);
     
+fid = fopen(filename,'r');
+stream = read_streamfile(fid);
+fclose(fid);
+        
+        
     
