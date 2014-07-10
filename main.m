@@ -17,8 +17,8 @@ Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 30;
-TrainPSNR  = 32;
+TargetPSNR = 20;
+TrainPSNR  = 22;
 
 %% Wavelet Transform
     % fixed param
@@ -163,7 +163,7 @@ TrainPSNR  = 32;
         
 %% Entropy Encode (GAMMA)
 bins = Qpar.GAMMAbins;
-DEFAULTBINS = 64; % keep fixed on 64
+DEFAULTBINS = 32; % keep fixed on 64
 countsBinsValsGAMMA      = DEFAULTBINS;
 countsBinsRowStartGAMMA  = DEFAULTBINS;
 countsBinsRowDiffGAMMA   = DEFAULTBINS;
@@ -202,7 +202,7 @@ else
 end
 %% Entropy Encode (Dict)
     bins = Qpar.Dictbins;
-DEFAULTBINS = 64;
+DEFAULTBINS = 32;
 countsBinsValsDict      = DEFAULTBINS;
 countsBinsRowStartDict  = DEFAULTBINS;
 countsBinsRowDiffDict   = DEFAULTBINS;
@@ -218,6 +218,7 @@ dictLen = DictSize(0,Kpar);% max dict len
 [DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen,countsBinsRowDiffDict);
 
 DictCOLBINS = CELLARRMAX(DictdiffCol);
+% dbstop in EntropyEncodediffCol
 [DictdiffColcode,DictdiffColcounts] = EntropyEncodediffCol(DictdiffCol,DictCOLBINS,countsBinsColDiffDict);
 
 [Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,countsBinsValsDict,Wpar.level);
@@ -264,19 +265,19 @@ filename = 'im1';
 
 fid    = fopen(filename,'w');
 
-CODEHED = 0;
+
 codevars = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
            ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
            ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
            ,'DictdiffRowcode','DictdiffColcode'...
             };
         
-CODELEN  = zeros(size(codevars));
-CODEHEDLEN = 0;           
+CODEVARSLEN  = zeros(size(codevars));
+CODEVARSHEDLEN = 0;           
 for i=1:length(codevars)
     eval(sprintf('stream=%s;',codevars{i}));
-    [CODELEN(i),HEDTMP] = write_stream2file (stream,fid);
-    CODEHEDLEN = CODEHEDLEN + HEDTMP;
+    [CODEVARSLEN(i),HEDTMP] = write_stream2file (stream,fid);
+    CODEVARSHEDLEN = CODEVARSHEDLEN + HEDTMP;
 end
 
 countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
@@ -284,8 +285,20 @@ countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
               'Dictvalcounts','DictRowStartcounts',...
               'DictdiffRowcounts','DictdiffColcounts',...
               };
-
-
+          
+          whos('GAMMAvalcounts','GAMMARowStartcounts',...
+              'GAMMAdiffRowcounts','GAMMAdiffColcounts',...
+              'Dictvalcounts','DictRowStartcounts',...
+              'DictdiffRowcounts','DictdiffColcounts'...
+          );
+          
+COUNTVARSLEN  = zeros(size(codevars));
+COUNTVARSHEDLEN = 0;  
+for i=1:length(codevars)
+    eval(sprintf('COUNTS=%s;',codevars{i}));
+    [COUNTVARSLEN(i),HEDTMP] = write_counts2file (COUNTS,fid,DEFAULTBINS);
+    COUNTVARSHEDLEN = COUNTVARSHEDLEN + HEDTMP;
+end
 
 filesize = ftell(fid)
 fclose(fid);

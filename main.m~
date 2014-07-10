@@ -163,7 +163,7 @@ TrainPSNR  = 32;
         
 %% Entropy Encode (GAMMA)
 bins = Qpar.GAMMAbins;
-DEFAULTBINS = 64;
+DEFAULTBINS = 64; % keep fixed on 64
 countsBinsValsGAMMA      = DEFAULTBINS;
 countsBinsRowStartGAMMA  = DEFAULTBINS;
 countsBinsRowDiffGAMMA   = DEFAULTBINS;
@@ -172,21 +172,21 @@ countsBinsColDiffGAMMA   = DEFAULTBINS;
 %     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
 
 % dbstop in EntropyEncodeVals
-[GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsVals);
+[GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsValsGAMMA);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
 
 dictLen = DictSize(0,Kpar);% max dict len
-[GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStart);
-[GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiff);
+[GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
+[GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
 GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);
-[GAMMAdiffColcode,GAMMAdiffColcounts] = EntropyEncodediffCol(GAMMAdiffCol,GAMMACOLBINS,countsBinsColDiff);
+[GAMMAdiffColcode,GAMMAdiffColcounts] = EntropyEncodediffCol(GAMMAdiffCol,GAMMACOLBINS,countsBinsColDiffGAMMA);
 
-[GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,countsBinsVals,Wpar.level);
+[GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,countsBinsValsGAMMA,Wpar.level);
 [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
-[GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStart,Wpar.level);
-[GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiff,Wpar.level);
-[GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiff,Wpar.level);
+[GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStartGAMMA,Wpar.level);
+[GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiffGAMMA,Wpar.level);
+[GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,Wpar.level);
 
 GAMMAentValid = zeros(1,5);
 GAMMAentValid(1) = isequal(GAMMAval5,GAMMAval);
@@ -202,10 +202,11 @@ else
 end
 %% Entropy Encode (Dict)
     bins = Qpar.Dictbins;
-countsBinsValsDict      = 64;
-countsBinsRowStartDict  = 64;
-countsBinsRowDiffDict   = 64;
-countsBinsColDiffDict   = 64;
+DEFAULTBINS = 64;
+countsBinsValsDict      = DEFAULTBINS;
+countsBinsRowStartDict  = DEFAULTBINS;
+countsBinsRowDiffDict   = DEFAULTBINS;
+countsBinsColDiffDict   = DEFAULTBINS;
 %     ShowHist(DictdiffCol,'DictdiffCol',DictRowStart,'DictRowStart',DictdiffRow,'DictdiffRow',bins);
 %     ShowHist(Dictval,'Dictval',Dictneg,'Dictneg',bins);
 
@@ -217,6 +218,7 @@ dictLen = DictSize(0,Kpar);% max dict len
 [DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen,countsBinsRowDiffDict);
 
 DictCOLBINS = CELLARRMAX(DictdiffCol);
+% dbstop in EntropyEncodediffCol
 [DictdiffColcode,DictdiffColcounts] = EntropyEncodediffCol(DictdiffCol,DictCOLBINS,countsBinsColDiffDict);
 
 [Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,countsBinsValsDict,Wpar.level);
@@ -263,19 +265,19 @@ filename = 'im1';
 
 fid    = fopen(filename,'w');
 
-CODEHED = 0;
+
 codevars = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
            ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
            ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
            ,'DictdiffRowcode','DictdiffColcode'...
             };
         
-CODELEN  = zeros(size(codevars));
-CODEHEDLEN = 0;           
+CODEVARSLEN  = zeros(size(codevars));
+CODEVARSHEDLEN = 0;           
 for i=1:length(codevars)
     eval(sprintf('stream=%s;',codevars{i}));
-    [CODELEN(i),HEDTMP] = write_stream2file (stream,fid);
-    CODEHEDLEN = CODEHEDLEN + HEDTMP;
+    [CODEVARSLEN(i),HEDTMP] = write_stream2file (stream,fid);
+    CODEVARSHEDLEN = CODEVARSHEDLEN + HEDTMP;
 end
 
 countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
@@ -283,8 +285,10 @@ countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
               'Dictvalcounts','DictRowStartcounts',...
               'DictdiffRowcounts','DictdiffColcounts',...
               };
-
-
+for i=1:length(countsvars)
+    eval(sprintf('stream=%s;',countsvars{i}));
+    figure;hist(stream,100);
+end
 
 filesize = ftell(fid)
 fclose(fid);

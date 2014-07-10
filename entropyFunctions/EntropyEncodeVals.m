@@ -11,24 +11,24 @@ function [code,probLOGQ,len] = EntropyEncodeVals(GAMMA,bins,countsBins)
     end
     
     % probabilties calc
-    counts = zeros(1,bins+1);
+    countsTmp = zeros(1,bins+1);
     for i=1:length(GAMMACONT);
-        counts(GAMMACONT(i)) = counts(GAMMACONT(i))+1;
+        countsTmp(GAMMACONT(i)) = countsTmp(GAMMACONT(i))+1;
     end
     
-    prob = counts/max(counts)+2;
-    countsNQ = round((prob-2)*1000)+1;
+    prob = countsTmp/max(countsTmp)*10000+2;
+    countsNQ = countsTmp+1;
     
     % probabilties quantization
-    probLOG  = log2(prob);
+    probLOG  = log2(prob)/max(log2(prob));
     probLOGQ = round(probLOG*(countsBins-1));
     
     probLOGRE  = probLOGQ/(countsBins-1);
-    probRE     = 2.^(probLOGRE)-2;
-    counts     = round(probRE*1000)+1;
+    probRE     = 2.^(probLOGRE*13.3);
+    counts     = round(probRE)+1;
 
     % entropy coding
-    code = arithenco(GAMMACONT,counts);
+    code = arithenco(GAMMACONT, counts);
     old_code = arithenco(GAMMACONT,countsNQ);
     
     SAVED = (bins+1)*2-(bins+1)*log2(countsBins)/8;
