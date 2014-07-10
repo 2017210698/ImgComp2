@@ -1,7 +1,13 @@
-function [GAMMAval] = EntropyDecodeVals(code,counts,len,bins,level)
+function [GAMMAval] = EntropyDecodeVals(code,counts,len,bins,countsBins,level)
     m = 3;
     n = level;
     GAMMAval = cell(m,n);
+    
+    % de quantize counts
+    probLOGQ   = counts;
+    probLOGRE  = probLOGQ/(countsBins-1);
+    probRE     = 2.^(probLOGRE)-2;
+    counts     = round(probRE*1000)+1;
     
     dseq = arithdeco(code,counts,len);
     

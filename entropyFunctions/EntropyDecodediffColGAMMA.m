@@ -1,4 +1,4 @@
-function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,level)
+function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,countsBins,level)
     m = 3;
     n = level;
     GAMMAdiffCol = cell(m,n);
@@ -11,7 +11,12 @@ function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,level)
             LEN = LEN + LENCELL{i,j};
         end
     end
-
+    
+    % de quantize counts
+    probLOGQ   = counts;
+    probLOGRE  = probLOGQ/(countsBins-1);
+    probRE     = 2.^(probLOGRE)-2;
+    counts     = round(probRE*1000)+1;
     
     dseq = arithdeco(code,counts,LEN);
     dseq = dseq-1;

@@ -1,4 +1,4 @@
-function [code,counts] = EntropyEncodediffCol(GAMMA,MAXGAMMADIFFCOL) 
+function [code,probLOGQ] = EntropyEncodediffCol(GAMMA,MAXGAMMADIFFCOL,countsBins) 
     m=size(GAMMA,1);
     n=size(GAMMA,2);
     
@@ -10,11 +10,31 @@ function [code,counts] = EntropyEncodediffCol(GAMMA,MAXGAMMADIFFCOL)
     end
     
     % probabilties calc
-    counts = ones(1,MAXGAMMADIFFCOL+1); % ** initiate to ones for zeros are not allowed
+    counts = zeros(1,MAXGAMMADIFFCOL+1); % ** initiate to ones for zeros are not allowed
     GAMMACONT = GAMMACONT+1;
     for i=1:length(GAMMACONT);
         counts(GAMMACONT(i)) = counts(GAMMACONT(i))+1;
     end
     
+    prob = counts/max(counts)+2;
+    countsNQ = round((prob-2)*1000)+1;
+    
+    % probabilties quantization
+    probLOG  = log2(prob);
+    probLOGQ = round(probLOG*(countsBins-1));
+    
+    probLOGRE  = probLOGQ/(countsBins-1);
+    probRE     = 2.^(probLOGRE)-2;
+    counts     = round(probRE*1000)+1;
+    
+
+    % entropy coding
     code = arithenco(GAMMACONT,counts);
+    old_code = arithenco(GAMMACONT,countsNQ);
+    
+    bins  = MAXGAMMADIFFCOL;
+    SAVED = (bins+1)*2-(bins+1)*log2(countsBins)/8;
+    fprintf('****Entropy Code DiffCol****\n');
+    fprintf('  length(code):    %g\n  length(old_code):%g\n  LOST:            %g Byte\n  SAVED:           %g Byte, REMOVE(CPU HEAVY)\n',...
+             length(code),length(old_code),(length(code)-length(old_code))/8,SAVED);
 end
