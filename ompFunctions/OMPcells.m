@@ -47,11 +47,7 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
 end
 
 function [X,m] = Im2colgomp(Im,level)
-if(level<3)
-    pSize = 8;
-else
-    pSize = 4;
-end
+    pSize = PatchSize(level);
     X = im2col(Im,[pSize pSize],'distinct');
     m = pSize^2;
 end

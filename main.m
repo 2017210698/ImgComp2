@@ -17,8 +17,8 @@ Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 
-TargetPSNR = 30;
-TrainPSNR  = 32;
+TargetPSNR = 32;
+TrainPSNR  = 33;
 
 %% Wavelet Transform
     % fixed param
@@ -36,13 +36,13 @@ TrainPSNR  = 32;
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 
 %% Sparse KSVD (Train Dictionaries)
-    Kpar.perTdictBig   = 0.02;
+    Kpar.perTdictBig   = 0.01;
     Kpar.perTdictSmall = 0.02;
-    Kpar.Rbig          = 2.5;
-    Kpar.Rsmall       = 2.5;
+    Kpar.Rbig          = 3;
+    Kpar.Rsmall       = 3;
     Kpar.targetPSNR = TrainPSNR;
-    Kpar.iternum   = 8;
-    Kpar.printInfo = 1;
+    Kpar.iternum   = 15;
+    Kpar.printInfo = 0;
     Kpar.plots     = 0;
     Dict = TrainDictCells(Coef,Kpar);
 %% Normalize Dictionaries (degree of freedom)
@@ -73,9 +73,9 @@ TrainPSNR  = 32;
     figure(f1);subplot(f1m,f1n,2);imshow(Im_rec0,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
 
 %% Quantization (GAMMA,Dict)
-    Qpar.GAMMAbins = 2^6;
-    Qpar.Dictbins  = 2^6;
-    Qpar.infoDyRange = 1;
+    Qpar.GAMMAbins = 2^7;
+    Qpar.Dictbins  = 2^5;
+    Qpar.infoDyRange = 0;
 
     [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
     [Dictq ,DictNegSigns]            = QuantizeDict(Dict,Qpar);
@@ -95,7 +95,7 @@ TrainPSNR  = 32;
     figure(f1);subplot(f1m,f1n,3);imshow(Im_rec1,[]);title(sprintf('Quant reconstrucion PSNR:%.2f',PSNR));
     
 %% Optimazie Gamma
-    Opar.plots = 1;
+    Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
     [GAMMAq,Dictq,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMAq,Dictq,GAMMANegSigns,DictNegSigns,Opar);
     
@@ -292,7 +292,7 @@ countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
               'DictdiffRowcounts','DictdiffColcounts'...
           );
           
-COUNTVARSLEN  = zeros(size(codevars));
+COUNTVARSLEN  = zeros(size(countsvars));
 COUNTVARSHEDLEN = 0;  
 for i=1:length(countsvars)
     eval(sprintf('COUNTS=%s;',countsvars{i}));
@@ -316,12 +316,46 @@ for i=1:size(Ap,1)
         APLEN = APLEN+ 4;
     end
 end
-     
 
 
-filesize = ftell(fid)
+
+
+filesize = ftell(fid);
+Bpp = filesize/numel(Im)
+FINALPSNR = 0;
+
+
+
 fclose(fid);
-    
+%% stat
+
+varslabels = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
+              ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
+              ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
+              ,'DictdiffRowcode','DictdiffColcode'...
+              ,'GAMMAvalcounts','GAMMARowStartcounts'...
+              ,'GAMMAdiffRowcounts','GAMMAdiffColcounts'...
+              ,'Dictvalcounts','DictRowStartcounts'...
+              ,'DictdiffRowcounts','DictdiffColcounts'...
+              ,'Ap'...
+              ,'GAMMAmaxq'...
+              ,'CodeHeaders'...
+              ,'CountsHeaders'...
+              };
+VARSLEN      = [CODEVARSLEN,COUNTVARSLEN,APLEN,GAMNAMAXLEN,CODEVARSHEDLEN,COUNTVARSHEDLEN];
+
+[VARSLENS,ind]=sort(VARSLEN,'descend');
+varslabelsS = cell(size(varslabels));
+for i=1:length(varslabels)
+    varslabelsS{i}=varslabels{ind(i)};
+end
+
+figure; pie(VARSLENS,varslabelsS)
+
+
+%% reading and reconstruction
+clear alll ;
+
 fid = fopen(filename,'r');
 stream = read_streamfile(fid);
 fclose(fid);

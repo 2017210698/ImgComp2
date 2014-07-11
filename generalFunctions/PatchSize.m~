@@ -1,0 +1,8 @@
+function [pSize] = PatchSize(level)
+    if(level<3)
+        pSize=4;
+    else
+        pSize=4;
+    end
+end
+
