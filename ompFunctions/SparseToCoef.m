@@ -4,27 +4,21 @@ function   [Coef]  = SparseToCoef(GAMMA,Dict)
     Coef = cell(mm,nn);
     for j = 1:nn
         for i=1:mm
-            m          = patchSize(j);
+            m          = PatchSize(j);
             dictLen    = size(GAMMA{i,j},1);
-            phi        = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
+            phi        = kron(odctdict(m,sqrt(dictLen)),odctdict(m,sqrt(dictLen)));
             DD         = phi*Dict{i,j}; % Xr = phi*A*Gamma;
             X          = DD*GAMMA{i,j};
-            Coef{i,j}  = col2Imgomp(X,m);
+            Coef{i,j}  = col2Imgomp(X,m,j);
         end
     end
 end
 
 
-function [Im] = col2Imgomp(X,m)
-    pSize = sqrt(m);
-    oSize = sqrt(numel(X));
+function [Im] = col2Imgomp(X,m,j)
+    global Gpar;
+    pSize = m;
+    oSize = WaveImSize(Gpar.mIm,Gpar.nIm,j);
     Im = col2im(X,[pSize pSize],[oSize oSize],'distinct');
 end
 
-function m = patchSize(level)
-    if(level<3)
-        m = 64;
-    else
-        m = 16;
-    end
-end

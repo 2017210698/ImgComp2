@@ -1,5 +1,5 @@
 function stream = read_streamfile(fid,LEN)
-    if(nargin<3)
+    if(nargin<2)
         len    = fread(fid,1,'uint32');
     elseif(strcmp(LEN,'COUNTS'))
         len    = fread(fid,1,'uint8');

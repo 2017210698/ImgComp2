@@ -5,7 +5,7 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
     D = Coef(3,:); %#ok<NASGU>
     level   = Wpar.level;
     GAMMA   = cell(3,level);
-    PSNR    = Kpar.targetPSNR;
+    PSNR    = Kpar.trainPSNR;
     MSE     = 255^2*10^(-PSNR/10);
     band = {'H','V','D'};
     % for each level each dirction train dictionary
@@ -24,7 +24,7 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
                 Rtmp     = Kpar.Rsmall;
             end
             R       =  DictRedundancy(Rtmp,m); % dictionary reduandancy
-                fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
+%                 fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
             dictLen =  R*m;
             phi = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD  = phi*Dict{i,j}; % Xr = phi*A*Gamma;

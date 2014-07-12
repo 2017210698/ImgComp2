@@ -1,4 +1,4 @@
-function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,countsBins,level,Kpar)
+function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,countsBins,level)
     m = 3;
     n = level;
     GAMMAdiffCol = cell(m,n);
@@ -7,8 +7,9 @@ function  [GAMMAdiffCol] = EntropyDecodediffColGAMMA(code,counts,countsBins,leve
     LEN = 0 ;
     for j=1:n
         for i=1:m
-            [~,GAMMACOL]  = GAMMASize(j,Kpar);
-            LENCELL{i,j} = GAMMACOL;
+            
+            [m,n]  = GAMMASize(mIm,nIm,level,Kpar);
+            LENCELL{i,j} = GAMMColSize(j);
             LEN = LEN + LENCELL{i,j};
         end
     end

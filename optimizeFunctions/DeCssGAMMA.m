@@ -1,6 +1,4 @@
 function     [GAMMAq,GAMMANegSigns] = DeCssGAMMA(GAMMAval,GAMMAneg,GAMMArow,GAMMAcol,Kpar)
-
-
     GAMMAq        = cell(size(GAMMAval));
     GAMMANegSigns = cell(size(GAMMAval));
     
@@ -13,9 +11,8 @@ function     [GAMMAq,GAMMANegSigns] = DeCssGAMMA(GAMMAval,GAMMAneg,GAMMArow,GAMM
             NEG = GAMMAneg{i,j};
             COL = GAMMAcol{i,j};
             ROW = GAMMArow{i,j};
-            
-                        
-            [m,n]  = GAMMASize(512,512,j,Kpar); 
+           
+            [m,n]  = GAMMASize(j,Kpar); 
   
             GAM    = zeros(m,n);
             GAMNEG = zeros(m,n);

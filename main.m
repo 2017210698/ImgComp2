@@ -9,17 +9,17 @@ addpath('diffFunctions/');
 addpath('generalFunctions/');
 addpath('arithcoFunctions/');
 addpath('fileFunctions/');
-%% 
-close all;clear all;clc;
 %% get Image 
 
 Im= imread('barbara.gif');
 f1m=2;f1n=2;
 f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
-
-TargetPSNR = 32;
-TrainPSNR  = 33;
-
+    
+    global Gpar;
+    Gpar.pSizeBig   = 3;
+    Gpar.pSizeSmall = 5;
+    Gpar.mIm        = size(Im,1);
+    Gpar.nIm        = size(Im,2);
 %% Wavelet Transform
     % fixed param
     Wpar.wavelet_name = 'sym8'; dwtmode('per','nodisp');  
@@ -40,7 +40,7 @@ TrainPSNR  = 33;
     Kpar.perTdictSmall = 0.02;
     Kpar.Rbig          = 3;
     Kpar.Rsmall       = 3;
-    Kpar.targetPSNR = TrainPSNR;
+    Kpar.targetPSNR = 25;
     Kpar.iternum   = 15;
     Kpar.printInfo = 0;
     Kpar.plots     = 0;
@@ -56,7 +56,7 @@ TrainPSNR  = 33;
     
 %% GOMP (Sparse representations) 
     Kpar.gomp_test =1;
-    Kpar.targetPSNR = TargetPSNR;
+    Kpar.trainPSNR = 23;
     [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
     
     % Reconstruction
@@ -73,7 +73,7 @@ TrainPSNR  = 33;
     figure(f1);subplot(f1m,f1n,2);imshow(Im_rec0,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
 
 %% Quantization (GAMMA,Dict)
-    Qpar.GAMMAbins = 2^7;
+    Qpar.GAMMAbins = 2^6;
     Qpar.Dictbins  = 2^5;
     Qpar.infoDyRange = 0;
 
@@ -135,6 +135,7 @@ TrainPSNR  = 33;
 %% Diff Code (for GAMMAcol ,Dictcol)
 %     dbstop in DiffColCCS
     [GAMMAdiffCol,GAMMARowStart,GAMMAdiffRow] = DiffColCCS(GAMMArow,GAMMAcol);
+   
     [DictdiffCol,DictRowStart,DictdiffRow   ] = DiffColCCS(Dictrow ,Dictcol);
 
 
@@ -163,7 +164,7 @@ TrainPSNR  = 33;
         
 %% Entropy Encode (GAMMA)
 bins = Qpar.GAMMAbins;
-DEFAULTBINS = 32; % keep fixed on 64
+DEFAULTBINS = 32; % keep fixed on 32/64
 countsBinsValsGAMMA      = DEFAULTBINS;
 countsBinsRowStartGAMMA  = DEFAULTBINS;
 countsBinsRowDiffGAMMA   = DEFAULTBINS;
@@ -175,7 +176,7 @@ countsBinsColDiffGAMMA   = DEFAULTBINS;
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsValsGAMMA);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
 
-dictLen = DictSize(0,Kpar);% max dict len
+dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));% max dict len
 [GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
 [GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
@@ -186,7 +187,7 @@ GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);
 [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
 [GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStartGAMMA,Wpar.level);
 [GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiffGAMMA,Wpar.level);
-[GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,Wpar.level);
+[GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,Wpar.level,Kpar);
 
 GAMMAentValid = zeros(1,5);
 GAMMAentValid(1) = isequal(GAMMAval5,GAMMAval);
@@ -201,7 +202,7 @@ else
     error('ERR: **ENTROPY encoding TEST FAILED (GAMMA)**')
 end
 %% Entropy Encode (Dict)
-    bins = Qpar.Dictbins;
+bins = Qpar.Dictbins;
 DEFAULTBINS = 32;
 countsBinsValsDict      = DEFAULTBINS;
 countsBinsRowStartDict  = DEFAULTBINS;
@@ -213,8 +214,9 @@ countsBinsColDiffDict   = DEFAULTBINS;
 [Dictvalcode,Dictvalcounts,Dictvallen] = EntropyEncodeVals(Dictval,bins,countsBinsValsDict);
 [Dictnegcode] = Cell2CONT(Dictneg);
 
-dictLen = DictSize(0,Kpar);% max dict len
+dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));
 [DictRowStartcode,DictRowStartcounts,DictRowStartlen] = EntropyEncodeVals(DictRowStart,dictLen,countsBinsRowStartDict);
+% dbstop in EntropyEncodediffRow
 [DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen,countsBinsRowDiffDict);
 
 DictCOLBINS = CELLARRMAX(DictdiffCol);
@@ -224,6 +226,7 @@ DictCOLBINS = CELLARRMAX(DictdiffCol);
 [Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,countsBinsValsDict,Wpar.level);
 [Dictneg5] = CONT2Cell(Dictnegcode,Dictval5);
 [DictRowStart5] = EntropyDecodeVals(DictRowStartcode,DictRowStartcounts,DictRowStartlen,dictLen,countsBinsRowStartDict,Wpar.level);
+% dbstop in EntropyDecodediffRow
 [DictdiffRow5 ] = EntropyDecodediffRow(DictdiffRowcode,DictdiffRowcounts,DictRowStart5,Dictval5,countsBinsRowDiffDict,Wpar.level);
 [DictdiffCol5 ] = EntropyDecodediffColDict(DictdiffColcode,DictdiffColcounts,countsBinsColDiffDict,Wpar.level,Kpar);
 
@@ -286,12 +289,6 @@ countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
               'DictdiffRowcounts','DictdiffColcounts',...
               };
           
-          whos('GAMMAvalcounts','GAMMARowStartcounts',...
-              'GAMMAdiffRowcounts','GAMMAdiffColcounts',...
-              'Dictvalcounts','DictRowStartcounts',...
-              'DictdiffRowcounts','DictdiffColcounts'...
-          );
-          
 COUNTVARSLEN  = zeros(size(countsvars));
 COUNTVARSHEDLEN = 0;  
 for i=1:length(countsvars)
@@ -299,6 +296,19 @@ for i=1:length(countsvars)
     [COUNTVARSLEN(i),HEDTMP] = write_counts2file (COUNTS,fid,DEFAULTBINS);
     COUNTVARSHEDLEN = COUNTVARSHEDLEN + HEDTMP;
 end
+
+varlenvars = {'GAMMAvallen','GAMMARowStartlen',...
+              'Dictvallen','DictRowStartlen'...
+              };
+
+VALLENVARSLEN = 0;
+for i=1:length(varlenvars)
+    eval(sprintf('LENS=%s;',varlenvars{i}));
+    fwrite(fid,LENS,'uint32');
+    VALLENVARSLEN = VALLENVARSLEN + 4;
+end
+
+
 
 GAMNAMAXLEN = 0;
 for i=1:size(GAMMAqMAX,1)
@@ -321,10 +331,7 @@ end
 
 
 filesize = ftell(fid);
-Bpp = filesize/numel(Im)
-FINALPSNR = 0;
-
-
+BPP = filesize/numel(Im);
 
 fclose(fid);
 %% stat
@@ -341,24 +348,130 @@ varslabels = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
               ,'GAMMAmaxq'...
               ,'CodeHeaders'...
               ,'CountsHeaders'...
+              ,'vallen'...
               };
-VARSLEN      = [CODEVARSLEN,COUNTVARSLEN,APLEN,GAMNAMAXLEN,CODEVARSHEDLEN,COUNTVARSHEDLEN];
+VARSLEN      = [CODEVARSLEN,COUNTVARSLEN,APLEN,GAMNAMAXLEN,CODEVARSHEDLEN,COUNTVARSHEDLEN,VALLENVARSLEN];
 
 [VARSLENS,ind]=sort(VARSLEN,'descend');
 varslabelsS = cell(size(varslabels));
 for i=1:length(varslabels)
-    varslabelsS{i}=varslabels{ind(i)};
+    if(i<13)
+        varslabelsS{i}=varslabels{ind(i)};
+    else
+        varslabelsS{i}=' ';
+    end
 end
 
 figure; pie(VARSLENS,varslabelsS)
 
 
 %% reading and reconstruction
-clear alll ;
-
+filename = 'im1';
 fid = fopen(filename,'r');
-stream = read_streamfile(fid);
+
+codevars = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
+           ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
+           ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
+           ,'DictdiffRowcode','DictdiffColcode'...
+            };
+        
+for i=1:length(codevars)
+    stream = read_streamfile(fid);
+    eval(sprintf('%sRE=stream;',codevars{i}));
+end
+
+% test
+for i=1:length(codevars)
+    eval(sprintf('res=isequal(%sRE,%s);',codevars{i},codevars{i}));
+    if(res==0)
+        error('ERR: reading err');
+    end
+end
+
+countsvars = {'GAMMAvalcounts','GAMMARowStartcounts',...
+              'GAMMAdiffRowcounts','GAMMAdiffColcounts',...
+              'Dictvalcounts','DictRowStartcounts',...
+              'DictdiffRowcounts','DictdiffColcounts',...
+              };
+    
+for i=1:length(countsvars)
+    stream = read_countsfile(fid,DEFAULTBINS);
+    eval(sprintf('%sRE=stream;',countsvars{i}));
+end
+
+% test
+for i=1:length(countsvars)
+    eval(sprintf('res=isequal(%sRE,%s);',countsvars{i},countsvars{i}));
+    if(res==0)
+        error('ERR: reading err');
+    end
+end 
+
+
+varlenvars = {'GAMMAvallen','GAMMARowStartlen',...
+              'Dictvallen','DictRowStartlen'...
+              };
+for i=1:length(varlenvars)
+    stream = fread(fid,1,'uint32');
+    eval(sprintf('%sRE=stream;',varlenvars{i}));
+end
+
+GAMMAqMAXRE = cell(3,Wpar.level);
+for i=1:size(GAMMAqMAXRE,1)
+    for j=1:size(GAMMAqMAXRE,2)
+        GAMMAqMAXRE{i,j} = fread(fid,1,'single'); 
+    end
+end
+
+ApRE = zeros(8);
+for i=1:size(ApRE,1)
+    for j=1:size(ApRE,2)
+        ApRE(i,j) = fread(fid,1,'single'); 
+    end
+end
 fclose(fid);
-        
-        
+
+% reconstruction
+bins = Qpar.GAMMAbins;
+DEFAULTBINS = 32; % keep fixed on 32/64
+countsBinsValsGAMMA      = DEFAULTBINS;
+countsBinsRowStartGAMMA  = DEFAULTBINS;
+countsBinsRowDiffGAMMA   = DEFAULTBINS;
+countsBinsColDiffGAMMA   = DEFAULTBINS;
+dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));
+[GAMMAval6] = EntropyDecodeVals(GAMMAvalcodeRE,GAMMAvalcountsRE,GAMMAvallenRE,bins,countsBinsValsGAMMA,Wpar.level);
+[GAMMAneg6] = CONT2Cell(GAMMAnegcodeRE,GAMMAval6);
+[GAMMARowStart6] = EntropyDecodeVals(GAMMARowStartcodeRE,GAMMARowStartcountsRE,GAMMARowStartlenRE,dictLen,countsBinsRowStartGAMMA,Wpar.level);
+[GAMMAdiffRow6 ] = EntropyDecodediffRow(GAMMAdiffRowcodeRE,GAMMAdiffRowcountsRE,GAMMARowStart6,GAMMAval6,countsBinsRowDiffGAMMA,Wpar.level);
+[GAMMAdiffCol6 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcodeRE,GAMMAdiffColcountsRE,countsBinsColDiffGAMMA,Wpar.level,Kpar);
+
+bins = Qpar.Dictbins;
+DEFAULTBINS = 32;
+countsBinsValsDict      = DEFAULTBINS;
+countsBinsRowStartDict  = DEFAULTBINS;
+countsBinsRowDiffDict   = DEFAULTBINS;
+countsBinsColDiffDict   = DEFAULTBINS;
+[Dictval6] = EntropyDecodeVals(DictvalcodeRE,DictvalcountsRE,DictvallenRE,bins,countsBinsValsDict,Wpar.level);
+[Dictneg6] = CONT2Cell(DictnegcodeRE,Dictval6);
+[DictRowStart6] = EntropyDecodeVals(DictRowStartcodeRE,DictRowStartcountsRE,DictRowStartlenRE,dictLen,countsBinsRowStartDict,Wpar.level);
+[DictdiffRow6 ] = EntropyDecodediffRow(DictdiffRowcodeRE,DictdiffRowcountsRE,DictRowStart6,Dictval6,countsBinsRowDiffDict,Wpar.level);
+[DictdiffCol6 ] = EntropyDecodediffColDict(DictdiffColcodeRE,DictdiffColcountsRE,countsBinsColDiffDict,Wpar.level,Kpar);
+
+[GAMMArow6,GAMMAcol6]   = DeDiffCCS(GAMMAdiffCol6,GAMMARowStart6,GAMMAdiffRow6);
+[Dictrow6 ,Dictcol6   ] = DeDiffCCS(DictdiffCol6,DictRowStart6,DictdiffRow6);
+
+[GAMMAq6,GAMMANegSigns6] = DeCssGAMMA(GAMMAval6,GAMMAneg6,GAMMArow6,GAMMAcol6,Kpar);
+[Dictq6 ,DictNegSigns6 ] = DeCssDict (Dictval6,Dictneg6,Dictrow6,Dictcol6,Kpar);
+GAMMA6 = DeQuantizeGAMMA(GAMMAq6,GAMMAqMAXRE,GAMMANegSigns6,Qpar);
+Dict6  = DeQuantizeDict (Dictq6 ,DictNegSigns6,Qpar);
+tmpCoef6   = SparseToCoef(GAMMA6,Dict6); 
+Im_rec6    = WaveletDecode(ApRE,tmpCoef6,Wpar);
+
+% eval
+MSE    = norm(double(Im)-Im_rec4,'fro')^2/numel(Im);
+PSNR   = 10*log10(255^2/MSE);
+fprintf(' FINAL  PSNR:%.2f\n',PSNR);
+fprintf(' FINAL  Bpp :%.4f\n',BPP);
+figure(f1);subplot(f1m,f1n,4);imshow(Im_rec6,[]);title(sprintf('Final reconstrucion PSNR:%.2f,BPP:%.3f',PSNR,BPP));
+    
     
