@@ -48,10 +48,8 @@ end
     Dict = TrainDictCells(Coef,Kpar);
 %% Normalize Dictionaries (degree of freedom)
     for i=1:size(Dict,1)
-        for j=1:size(Dict,2)
-            for row=1:size(Dict{i,j},1)      
+        for j=1:size(Dict,2)     
                 Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
-            end
         end
     end
     
