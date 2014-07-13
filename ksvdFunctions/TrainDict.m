@@ -1,11 +1,11 @@
 function [A,err] = TrainDict(B,Kpar,level)
-    PSNR    = Kpar.targetPSNR; 
+    PSNR    = Kpar.trainPSNR; 
     [X,m]   = GetPatches(B,level);
     if(level<3)
-        perTdict = Kpar.perTdictBig;
+        TdictMaxAtoms = Kpar.dictBigMaxAtoms;
         Rtmp     = Kpar.Rbig;
     else
-        perTdict = Kpar.perTdictSmall;
+        TdictMaxAtoms = Kpar.dictSmallMaxAtoms;
         Rtmp     = Kpar.Rsmall;
     end
     R       = DictRedundancy(Rtmp,m); % dictionary reduandancy
@@ -17,7 +17,7 @@ function [A,err] = TrainDict(B,Kpar,level)
     params2d.basedict{2} = odctdict(sqrt(m),sqrt(dictLen));         
      
     % Train each patch under TargetPSNR ->MSE->Edata
-    params2d.Tdict   = ceil(perTdict*dictLen);  
+    params2d.Tdict   = TdictMaxAtoms;  
     MSE = 255^2*10^(-PSNR/10);
     params2d.Edata = sqrt(MSE*m); 
     

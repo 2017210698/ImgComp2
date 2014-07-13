@@ -5,7 +5,7 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
     D = Coef(3,:); %#ok<NASGU>
     level   = Wpar.level;
     GAMMA   = cell(3,level);
-    PSNR    = Kpar.trainPSNR;
+    PSNR    = Kpar.targetPSNR;
     MSE     = 255^2*10^(-PSNR/10);
     band = {'H','V','D'};
     % for each level each dirction train dictionary

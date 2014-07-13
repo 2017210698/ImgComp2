@@ -29,12 +29,12 @@ function [code,probLOGQ,len] = EntropyEncodeVals(GAMMA,bins,countsBins)
 
     % entropy coding
     code = arithenco(GAMMACONT, counts);
-    old_code = arithenco(GAMMACONT,countsNQ);
-    
-    SAVED = (bins+1)*2-(bins+1)*log2(countsBins)/8;
-    fprintf('****Entropy Code vals****\n');
-    fprintf('  length(code):    %g\n  length(old_code):%g\n  LOST:            %g Byte\n  SAVED:           %g Byte, REMOVE(CPU HEAVY)\n',...
-             length(code),length(old_code),(length(code)-length(old_code))/8,SAVED);
+%     old_code = arithenco(GAMMACONT,countsNQ);
+%     
+%     SAVED = (bins+1)*2-(bins+1)*log2(countsBins)/8;
+%     fprintf('****Entropy Code vals****\n');
+%     fprintf('  length(code):    %g\n  length(old_code):%g\n  LOST:            %g Byte\n  SAVED:           %g Byte, REMOVE(CPU HEAVY)\n',...
+%              length(code),length(old_code),(length(code)-length(old_code))/8,SAVED);
     len  = length(GAMMACONT);
 end
 
