@@ -1,43 +1,49 @@
-clear all; close all; clc   
    filename = 'barbara.gif';
-   outfilename = 'bar1';
+   outfilename = 'bar1';   
 %% Global param
     global Gpar;
-    Gpar.pSizeBig    = 8;
-    Gpar.pSizeSmall  = 4;
+    Gpar.pSizeBig    = 1 + randi(7);
+    Gpar.pSizeSmall  = 1 + randi(7);
     Gpar.plotReconst = 0;
+    Gpar.plotBppPie  = 0;
 %% Wavelet param
-    Wpar.wavelet_name = 'sym16'; dwtmode('per','nodisp');  
+    wavelet_names = {'sym8','sym16','db8','db16'};
+    Wpar.wavelet_name = wavelet_names{randi(length(wavelet_names))};
+        dwtmode('per','nodisp');  
     Wpar.plots = 0;
     Wpar.level = 6; % DONOT change for now
-%% Sparse KSVD (Train Dictionaries)
-    Kpar.Rbig              = 3;
-    Kpar.Rsmall            = 3;
-    Kpar.dictBigMaxAtoms   = 2; 
-    Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
-    Kpar.trainPSNR         = 32;
-    Kpar.iternum           = 2;
-    Kpar.printInfo         = 0;
-    Kpar.plots             = 0;
 %% GOMP (Sparse representations) 
     Kpar.gomp_test  = 0;
-    Kpar.targetPSNR = 32;
+    Kpar.targetPSNR = 25 + randi(10);
+%% Sparse KSVD (Train Dictionaries)
+    Kpar.Rbig              = randi(3) + 0.5*binornd(1,0.5);
+    Kpar.Rsmall            = randi(3) + 0.5*binornd(1,0.5);
+    Kpar.dictBigMaxAtoms   = randi(min(floor(Kpar.Rbig^2  *Gpar.pSizeBig  ),7));
+    Kpar.dictSmallMaxAtoms = randi(min(floor(Kpar.Rsmall^2*Gpar.pSizeSmall),7));
+    Kpar.trainPSNR         = Kpar.targetPSNR + randi(5) - 1;
+    Kpar.iternum           = 1;
+    Kpar.printInfo         = 0;
+    Kpar.plots             = 0;
 %% Quantization (GAMMA,Dict)
-    Qpar.GAMMAbins = 64;
-    Qpar.Dictbins  = 64;
+    Qpar.GAMMAbins = (1 + randi(7))*10;
+    Qpar.Dictbins  = (1 + randi(7))*10;
     Qpar.infoDyRange = 0;
 %% Optimazie Gamma
     Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
 
 [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
-ImRE = ImgRead(outfilename,Kpar,Wpar,Qpar,Opar);
-figure;imshow(ImRE,[])
-% TODO:
-% remove DC's
-% combine same levels
-% combine differently
-% save diffcol by a symbol to skeep to the next line instead of different
-% symbols
-% Haar transform really bad -> need a better wavelet
-% check the overhead of zeros padd im2col
+
+X = [PSNR                  ...
+    ,Gpar.pSizeBig         ...
+    ,Gpar.pSizeSmall       ... 
+    ,Wpar.wavelet_name     ...
+    ,Kpar.targetPSNR       ...
+    ,Kpar.Rbig             ... 
+    ,Kpar.Rsmall           ... 
+    ,Kpar.dictBigMaxAtoms  ... 
+    ,Kpar.dictSmallMaxAtoms... 
+    ,Kpar.trainPSNR        ...
+    ,Qpar.GAMMAbins        ...
+    ,Qpar.Dictbins         ...
+    ];
