@@ -1,14 +1,14 @@
    filename = 'barbara.gif';
    outfilename = 'bar1';   
    global Gpar;
-N    = 3;   
+N    = 10;   
 iter = 1;
 FEATURES = 12;
 TAGS     = 3;
 while(1)
     XTOT = zeros(N,FEATURES);
     YTOT = zeros(N,TAGS);
-    for i=1:N
+    for ii=1:N
     %% Global param
         Gpar.pSizeBig    = 2 + randi(6);
         Gpar.pSizeSmall  = 2 + randi(6);
@@ -56,9 +56,9 @@ while(1)
             ,Qpar.Dictbins         ...
             ];
         Y = [NNZD,NNZG,BPP];
-        XTOT(i,:) = X;
-        YTOT(i,:) = Y;
+        XTOT(ii,:) = X;
+        YTOT(ii,:) = Y;
     end
-    save(sprintf('DATA%d',iter),'XTOT','YTOT');
+    save(sprintf('DATA%7d',iter),'XTOT','YTOT');
     iter = iter +1;
 end
