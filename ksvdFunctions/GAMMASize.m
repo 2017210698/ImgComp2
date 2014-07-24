@@ -15,6 +15,6 @@ function [m,n]  = GAMMASize(level,Kpar)
         Rtmp     = Kpar.Rsmall;
     end
     R = DictRedundancy(Rtmp,mm);
-    m = mm*R;
+    m = round(mm*R);
 end
 
