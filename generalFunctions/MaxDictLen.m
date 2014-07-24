@@ -4,6 +4,6 @@ function [DictLen] = MaxDictLen(Kpar.R )
     % eligable reduandancy
     fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
    
-    dictLen = R*m;
+    dictLen = round(R*m);
 end
 

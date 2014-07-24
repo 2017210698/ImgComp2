@@ -7,7 +7,7 @@ function  [m,n]  = DictSize(level,Kpar)
         Rtmp     = Kpar.Rsmall;
     end
     R = DictRedundancy(Rtmp,mm);
-    m = mm*R;
+    m = round(mm*R);
     n = m;
 
 end
