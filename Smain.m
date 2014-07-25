@@ -1,4 +1,4 @@
-function Smain()
+function [X,Y] = Smain()
 clear all; close all;
 
 % X = [PSNR                  ...
@@ -32,16 +32,34 @@ end
 
 %% Plot Bpp vs PSNR
 
-FEATURE_IND = 12;
+FEATURE_IND = 9;
 
     switch FEATURE_IND
         % natural
         case 0  
             BPP     = Y(:,3);   
             figure;plot(BPP,X(:,1),'.');title('PSNR vs bpp');
+        % Patch size Big
+        case 4
+            FEATURE = 4;
+            VALS = 3:8;
+            map = copper(length(VALS));
+            TITLE = 'Color by Patch Size Big';
+            paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Patch size Small
-        case 5 
-
+        case 5
+            FEATURE = 5;
+            VALS = 3:8;
+            map = copper(length(VALS));
+            TITLE = 'Color by Patch Size Small';
+            paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
+        % wavelet ind
+        case 6
+            FEATURE = 6;
+            VALS = 1:4;
+            map = copper(length(VALS));
+            TITLE = 'Color by Wavelet';
+            paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Rbig
         case 7 
             FEATURE = 7;
