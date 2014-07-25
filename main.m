@@ -1,12 +1,13 @@
-function main (THREAD_NUM)
-    addpath('/home/matalb_exp/ksvd2');
-    addpath('/home/matalb_exp/ksvdbox1');
-    addpath('/home/matalb_exp/ompbox11');
+function main (THREAD_ID)
+    addpath('/home/soron/matlab_exp/ksvd2');
+    addpath('/home/soron/matlab_exp/ksvdbox11');
+    addpath('/home/soron/matlab_exp/ompbox1');
     %% Picture pram
         filename = 'barbara.gif';
-        outfilename = 'bar1';  
+        outfilename = sprintf('%sbarOut',THREAD_ID);  
     %% Inner Iteration param
-     global Gpar;
+    rng('shuffle');
+     global Gpar;    
      N    = 30;   
      iter = 1;
      FEATURES = 12;
@@ -65,7 +66,7 @@ while(1)
         XTOT(ii,:) = X;
         YTOT(ii,:) = Y;
     end
-    save(sprintf('dataSimul/DATA%d%d',THREAD_NUM,iter),'XTOT','YTOT');
+    save(sprintf('dataSimul/DATA%s%d',THREAD_ID,iter),'XTOT','YTOT');
     iter = iter +1;
 end
 end
