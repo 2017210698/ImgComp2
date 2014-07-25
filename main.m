@@ -1,10 +1,16 @@
-   filename = 'barbara.gif';
-   outfilename = 'bar1';   
-   global Gpar;
-N    = 10;   
-iter = 1;
-FEATURES = 12;
-TAGS     = 3;
+function main (THREAD_NUM)
+    addpath('/home/matalb_exp/ksvd2');
+    addpath('/home/matalb_exp/ksvdbox1');
+    addpath('/home/matalb_exp/ompbox11');
+    %% Picture pram
+        filename = 'barbara.gif';
+        outfilename = 'bar1';  
+    %% Inner Iteration param
+     global Gpar;
+     N    = 30;   
+     iter = 1;
+     FEATURES = 12;
+     TAGS     = 3;
 while(1)
     XTOT = zeros(N,FEATURES);
     YTOT = zeros(N,TAGS);
@@ -30,7 +36,7 @@ while(1)
         Kpar.dictBigMaxAtoms   = randi(min(floor(Kpar.Rbig^2  *Gpar.pSizeBig  ),7));
         Kpar.dictSmallMaxAtoms = randi(min(floor(Kpar.Rsmall^2*Gpar.pSizeSmall),7));
         Kpar.trainPSNR         = Kpar.targetPSNR + randi(5) - 1;
-        Kpar.iternum           = 1;
+        Kpar.iternum           = 30;
         Kpar.printInfo         = 0;
         Kpar.plots             = 0;
     %% Quantization (GAMMA,Dict)
@@ -59,6 +65,7 @@ while(1)
         XTOT(ii,:) = X;
         YTOT(ii,:) = Y;
     end
-    save(sprintf('DATA%7d',iter),'XTOT','YTOT');
+    save(sprintf('dataSimul/DATA%d%d',THREAD_NUM,iter),'XTOT','YTOT');
     iter = iter +1;
+end
 end
