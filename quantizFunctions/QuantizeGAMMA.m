@@ -2,8 +2,8 @@ function [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar)
     
     if(Qpar.infoDyRange);DynamicRangeStats(GAMMA,'GAMMA');end
     bins   = Qpar.GAMMAbins;
-    level = size(GAMMA,2);
-    band = {'H','V','D'};
+    level = 1;
+    band = {'HVD'};
     
     GAMMAq        = cell(size(GAMMA));
     GAMMAqMAX     = cell(size(GAMMA));

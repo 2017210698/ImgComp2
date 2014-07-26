@@ -1,7 +1,7 @@
 function GAMMA = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar)
     bins   = Qpar.GAMMAbins;
     level  = size(GAMMAq,2);
-    band   = {'H','V','D'};
+    band   = {'HVD'};
     GAMMA   = cell(size(GAMMAq));
     % de quantize
     for j = 1:level

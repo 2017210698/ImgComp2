@@ -8,8 +8,8 @@ function [PSNR,BPP] = Pmain(myPSNR)
     global Gpar;
     Gpar.pSizeBig    = 6;
     Gpar.pSizeSmall  = 4;
-    Gpar.plotReconst = 0;
-    Gpar.plotBppPie  = 0;
+    Gpar.plotReconst = 1;
+    Gpar.plotBppPie  = 1;
 %% Wavelet param
     Wpar.wavelet_name = 'sym16'; dwtmode('per','nodisp');  
     Wpar.plots = 0;
@@ -20,11 +20,11 @@ function [PSNR,BPP] = Pmain(myPSNR)
     Kpar.dictBigMaxAtoms   = 2; 
     Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
     Kpar.trainPSNR         = myPSNR+5;
-    Kpar.iternum           = 40;
+    Kpar.iternum           = 1; %40
     Kpar.printInfo         = 0;
-    Kpar.plots             = 0;
+    Kpar.plots             = 1;
 %% GOMP (Sparse representations) 
-    Kpar.gomp_test  = 0;
+    Kpar.gomp_test  = 1;
     Kpar.targetPSNR = myPSNR;
 %% Quantization (GAMMA,Dict)
     Qpar.GAMMAbins = 32;
@@ -34,6 +34,7 @@ function [PSNR,BPP] = Pmain(myPSNR)
     Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
 
+dbstop in ImgComp
 [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
 ImRE = ImgRead(outfilename,Kpar,Wpar,Qpar,Opar);
 % figure;imshow(ImRE,[])

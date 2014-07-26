@@ -2,8 +2,8 @@ function  [Dict ,DictNegSigns] = QuantizeDict(Dict,Qpar)
     if(Qpar.infoDyRange);DynamicRangeStats(Dict,'Dict');end
     bins   = Qpar.Dictbins;
     
-    level = size(Dict,2);
-    band = {'H','V','D'};
+    level = 1;
+    band = {'HVD'};
     
     MAX = 1;
     DictNegSigns = cell(size(Dict));

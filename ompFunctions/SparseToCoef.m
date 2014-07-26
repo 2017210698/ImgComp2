@@ -18,7 +18,7 @@ end
 function [Im] = col2Imgomp(X,m,j)
     global Gpar;
     pSize = m;
-    oSize = WaveImSize(Gpar.mIm,Gpar.nIm,j);
-    Im = col2im(X,[pSize pSize],[oSize oSize],'distinct');
+%     oSize = WaveImSize(Gpar.mIm,Gpar.nIm,j);
+    Im = col2im(X,[pSize pSize],[512 512],'distinct');
 end
 

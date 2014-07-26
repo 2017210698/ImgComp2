@@ -29,13 +29,13 @@ end
     [Ap,Coef] = WaveletEncode(Im,Wpar);
     % Coef are H,V,D 2d wavelet coeffiencets in cell array
 
-if(Gpar.plotReconst)    
-    % Reconstruction Check
-    Im_rec = WaveletDecode(Ap,Coef,Wpar);
-    MSE    =  norm(double(Im)-Im_rec,'fro')/numel(Im);
-    PSNR   =  10*log10(255^2/MSE);
-    fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
-end
+% if(Gpar.plotReconst)    
+%     % Reconstruction Check
+%     Im_rec = WaveletDecode(Ap,Coef,Wpar);
+%     MSE    =  norm(double(Im)-Im_rec,'fro')/numel(Im);
+%     PSNR   =  10*log10(255^2/MSE);
+%     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
+% end
 %% Sparse KSVD (Train Dictionaries)
 %     Kpar.perTdictBig   = 0.01;
 %     Kpar.perTdictSmall = 0.02;
