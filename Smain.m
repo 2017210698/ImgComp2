@@ -32,7 +32,7 @@ end
 
 %% Plot Bpp vs PSNR
 
-FEATURE_IND = 12;
+FEATURE_IND = 0;
 
     switch FEATURE_IND
         % natural
