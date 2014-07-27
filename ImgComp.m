@@ -53,52 +53,61 @@ end
                 Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
         end
     end
-    
-%% GOMP (Sparse representations) 
-%     Kpar.gomp_test =1;
-%     Kpar.targetPSNR = 40;
-    [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
 
-    
-% eval 
-NNZG    = cellArrayNNZ(GAMMA);
-NNZD    = cellArrayNNZ(Dict);
-    
-if(Gpar.plotReconst)    
-    % Reconstruction
-    tmpCoef0   = SparseToCoef(GAMMA,Dict);
-    Im_rec0    = WaveletDecode(Ap,tmpCoef0,Wpar);
-    
+%% Repeat until target PSNR is reached
+
+PSNR = inf;
+TARGET = Kpar.targetPSNR;
+iter   = 1;
+while(abs(PSNR-TARGET)>1e-2 && iter<10);
+    %% GOMP (Sparse representations) 
+    %     Kpar.gomp_test =1;
+    %     Kpar.targetPSNR = 40;
+        [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
+
+
     % eval 
-    MSE    = norm(double(Im)-Im_rec0,'fro')^2/numel(Im);
-    PSNR   = 10*log10(255^2/MSE);
-    fprintf('*******GOMP END *******\n');
-    fprintf(' GOMP PSNR:%.2f, nnz(GAMMA):%d, nnz(Dict):%d, Tot=%d\n',PSNR,NNZG,NNZD,NNZD+NNZG);
-    figure(f1);subplot(f1m,f1n,2);imshow(Im_rec0,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
+    NNZG    = cellArrayNNZ(GAMMA);
+    NNZD    = cellArrayNNZ(Dict);
+
+    if(Gpar.plotReconst)    
+        % Reconstruction
+        tmpCoef0   = SparseToCoef(GAMMA,Dict);
+        Im_rec0    = WaveletDecode(Ap,tmpCoef0,Wpar);
+
+        % eval 
+        MSE    = norm(double(Im)-Im_rec0,'fro')^2/numel(Im);
+        PSNR   = 10*log10(255^2/MSE);
+        fprintf('*******GOMP END *******\n');
+        fprintf(' GOMP PSNR:%.2f, nnz(GAMMA):%d, nnz(Dict):%d, Tot=%d\n',PSNR,NNZG,NNZD,NNZD+NNZG);
+        figure(f1);subplot(f1m,f1n,2);imshow(Im_rec0,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
+    end
+    %% Quantization (GAMMA,Dict)
+    %     Qpar.GAMMAbins = 2^6;
+    %     Qpar.Dictbins  = 2^5;
+    %     Qpar.infoDyRange = 0;
+
+        [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
+        [Dictq ,DictNegSigns]            = QuantizeDict(Dict,Qpar);
+
+        % Reconstruction
+        GAMMA1 = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar);
+        Dict1  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar);
+        tmpCoef1   = SparseToCoef(GAMMA1,Dict1);
+        Im_rec1    = WaveletDecode(Ap,tmpCoef1,Wpar);
+
+        % eval
+        MSE    = norm(double(Im)-Im_rec1,'fro')^2/numel(Im);
+        PSNR   = 10*log10(255^2/MSE);
+    if(Gpar.plotReconst)
+        NNZG    = cellArrayNNZ(GAMMAq);
+        NNZD    = cellArrayNNZ(Dictq);
+        fprintf(' Quant PSNR:%.2f, nnz(GAMMAq):%d, nnz(Dictq):%d, Tot=%d\n',PSNR,NNZG,NNZD,NNZD+NNZG);
+        figure(f1);subplot(f1m,f1n,3);imshow(Im_rec1,[]);title(sprintf('Quant reconstrucion PSNR:%.2f',PSNR));
+    end    
+    Kpar.targetPSNR = Kpar.targetPSNR + (TARGET-PSNR);
+    iter = iter+1;
 end
-%% Quantization (GAMMA,Dict)
-%     Qpar.GAMMAbins = 2^6;
-%     Qpar.Dictbins  = 2^5;
-%     Qpar.infoDyRange = 0;
-
-    [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
-    [Dictq ,DictNegSigns]            = QuantizeDict(Dict,Qpar);
-
-if(Gpar.plotReconst)   
-    % Reconstruction
-    GAMMA1 = DeQuantizeGAMMA(GAMMAq,GAMMAqMAX,GAMMANegSigns,Qpar);
-    Dict1  = DeQuantizeDict (Dictq ,DictNegSigns,Qpar);
-    tmpCoef1   = SparseToCoef(GAMMA1,Dict1);
-    Im_rec1    = WaveletDecode(Ap,tmpCoef1,Wpar);
-    
-    % eval
-    NNZG    = cellArrayNNZ(GAMMAq);
-    NNZD    = cellArrayNNZ(Dictq);
-    MSE    = norm(double(Im)-Im_rec1,'fro')^2/numel(Im);
-    PSNR   = 10*log10(255^2/MSE);
-    fprintf(' Quant PSNR:%.2f, nnz(GAMMAq):%d, nnz(Dictq):%d, Tot=%d\n',PSNR,NNZG,NNZD,NNZD+NNZG);
-    figure(f1);subplot(f1m,f1n,3);imshow(Im_rec1,[]);title(sprintf('Quant reconstrucion PSNR:%.2f',PSNR));
-end    
 %% Optimazie Gamma
 %     Opar.plots = 0;
 %     Opar.order = 'GAMMA'; % gamma columned descend population
@@ -370,7 +379,6 @@ if(Gpar.plotBppPie)
         end
     end
     figure; pie(VARSLENS,varslabelsS)
-    PSNR = -1;
     title(sprintf('IMG:%s, PSNR:%.2f, Bpp:%.3f',filename,PSNR,filesize/Gpar.mIm/Gpar.nIm));
 end
 %% reading and reconstruction

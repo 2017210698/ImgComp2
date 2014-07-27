@@ -11,18 +11,18 @@ clear all; close all; clc
     Wpar.wavelet_name = 'sym16'; dwtmode('per','nodisp');  
     Wpar.plots = 0;
     Wpar.level = 6; % DONOT change for now
+%% GOMP (Sparse representations) 
+    Kpar.gomp_test  = 0;
+    Kpar.targetPSNR = 35;
 %% Sparse KSVD (Train Dictionaries)
     Kpar.Rbig              = 3;
     Kpar.Rsmall            = 3;
     Kpar.dictBigMaxAtoms   = 2; 
     Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
-    Kpar.trainPSNR         = 32;
+    Kpar.trainPSNR         = Kpar.targetPSNR + 5;
     Kpar.iternum           = 2;
     Kpar.printInfo         = 0;
     Kpar.plots             = 0;
-%% GOMP (Sparse representations) 
-    Kpar.gomp_test  = 0;
-    Kpar.targetPSNR = 32;
 %% Quantization (GAMMA,Dict)
     Qpar.GAMMAbins = 64;
     Qpar.Dictbins  = 64;
@@ -30,6 +30,7 @@ clear all; close all; clc
 %% Optimazie Gamma
     Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
+    dbstop in ImgComp
 [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
 ImRE = ImgRead(outfilename,Kpar,Wpar,Qpar,Opar);
 figure;imshow(ImRE,[])
