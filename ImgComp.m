@@ -28,8 +28,8 @@ end
 %     Wpar.plots = 1;
 %     Wpar.level = 6;
     [Ap,Coef] = WaveletEncode(Im,Wpar);
-    % Coef are H,V,D 2d wavelet coeffiencets in cell array
-
+    % Coef are H,V,D 2d wavelet coeffiencets in cell array  
+    
 if(Gpar.plotReconst)    
     % Reconstruction Check
     Im_rec = WaveletDecode(Ap,Coef,Wpar);
@@ -179,6 +179,7 @@ end
 %         whos('Dictval','Dictneg','DictdiffCol','DictRowStart','DictdiffRow');
         
 %% Entropy Encode (GAMMA)
+level = 6;
 bins = Qpar.GAMMAbins;
 DEFAULTBINS = 32; % keep fixed on 32/64
 countsBinsValsGAMMA      = DEFAULTBINS;
@@ -191,7 +192,7 @@ countsBinsColDiffGAMMA   = DEFAULTBINS;
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsValsGAMMA);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
 
-dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));% max dict len
+dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));% max dict len
 [GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
 [GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
@@ -200,11 +201,11 @@ GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);
 
 if(Gpar.plotReconst)
 % reconstructoin
-    [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,countsBinsValsGAMMA,Wpar.level);
+    [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,countsBinsValsGAMMA,level);
     [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
-    [GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStartGAMMA,Wpar.level);
-    [GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiffGAMMA,Wpar.level);
-    [GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,Wpar.level,Kpar);
+    [GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStartGAMMA,level);
+    [GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiffGAMMA,level);
+    [GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,level,Kpar);
 
     GAMMAentValid = zeros(1,5);
     GAMMAentValid(1) = isequal(GAMMAval5,GAMMAval);
@@ -220,6 +221,7 @@ if(Gpar.plotReconst)
     end
 end
 %% Entropy Encode (Dict)
+level = 6;
 bins = Qpar.Dictbins;
 DEFAULTBINS = 32;
 countsBinsValsDict      = DEFAULTBINS;
@@ -232,7 +234,7 @@ countsBinsColDiffDict   = DEFAULTBINS;
 [Dictvalcode,Dictvalcounts,Dictvallen] = EntropyEncodeVals(Dictval,bins,countsBinsValsDict);
 [Dictnegcode] = Cell2CONT(Dictneg);
 
-dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));
+dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));
 [DictRowStartcode,DictRowStartcounts,DictRowStartlen] = EntropyEncodeVals(DictRowStart,dictLen,countsBinsRowStartDict);
 [DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen,countsBinsRowDiffDict);
 
@@ -241,11 +243,11 @@ DictCOLBINS = CELLARRMAX(DictdiffCol);
 
 if(Gpar.plotReconst)
 % Reconstruction
-    [Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,countsBinsValsDict,Wpar.level);
+    [Dictval5] = EntropyDecodeVals(Dictvalcode,Dictvalcounts,Dictvallen,bins,countsBinsValsDict,level);
     [Dictneg5] = CONT2Cell(Dictnegcode,Dictval5);
-    [DictRowStart5] = EntropyDecodeVals(DictRowStartcode,DictRowStartcounts,DictRowStartlen,dictLen,countsBinsRowStartDict,Wpar.level);
-    [DictdiffRow5 ] = EntropyDecodediffRow(DictdiffRowcode,DictdiffRowcounts,DictRowStart5,Dictval5,countsBinsRowDiffDict,Wpar.level);
-    [DictdiffCol5 ] = EntropyDecodediffColDict(DictdiffColcode,DictdiffColcounts,countsBinsColDiffDict,Wpar.level,Kpar);
+    [DictRowStart5] = EntropyDecodeVals(DictRowStartcode,DictRowStartcounts,DictRowStartlen,dictLen,countsBinsRowStartDict,level);
+    [DictdiffRow5 ] = EntropyDecodediffRow(DictdiffRowcode,DictdiffRowcounts,DictRowStart5,Dictval5,countsBinsRowDiffDict,level);
+    [DictdiffCol5 ] = EntropyDecodediffColDict(DictdiffColcode,DictdiffColcounts,countsBinsColDiffDict,level,Kpar);
 
     DictentValid = zeros(1,5);
     DictentValid(1) = isequal(Dictval5,Dictval);
@@ -432,7 +434,7 @@ end
         eval(sprintf('%sRE=stream;',varlenvars{i}));
     end
 
-    GAMMAqMAXRE = cell(3,Wpar.level);
+    GAMMAqMAXRE = cell(3,level);
     for i=1:size(GAMMAqMAXRE,1)
         for j=1:size(GAMMAqMAXRE,2)
             GAMMAqMAXRE{i,j} = fread(fid,1,'single'); 
@@ -454,12 +456,12 @@ end
     countsBinsRowStartGAMMA  = DEFAULTBINS;
     countsBinsRowDiffGAMMA   = DEFAULTBINS;
     countsBinsColDiffGAMMA   = DEFAULTBINS;
-    dictLen = max(DictSize(0,Kpar),DictSize(Wpar.level,Kpar));
-    [GAMMAval6] = EntropyDecodeVals(GAMMAvalcodeRE,GAMMAvalcountsRE,GAMMAvallenRE,bins,countsBinsValsGAMMA,Wpar.level);
+    dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));
+    [GAMMAval6] = EntropyDecodeVals(GAMMAvalcodeRE,GAMMAvalcountsRE,GAMMAvallenRE,bins,countsBinsValsGAMMA,level);
     [GAMMAneg6] = CONT2Cell(GAMMAnegcodeRE,GAMMAval6);
-    [GAMMARowStart6] = EntropyDecodeVals(GAMMARowStartcodeRE,GAMMARowStartcountsRE,GAMMARowStartlenRE,dictLen,countsBinsRowStartGAMMA,Wpar.level);
-    [GAMMAdiffRow6 ] = EntropyDecodediffRow(GAMMAdiffRowcodeRE,GAMMAdiffRowcountsRE,GAMMARowStart6,GAMMAval6,countsBinsRowDiffGAMMA,Wpar.level);
-    [GAMMAdiffCol6 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcodeRE,GAMMAdiffColcountsRE,countsBinsColDiffGAMMA,Wpar.level,Kpar);
+    [GAMMARowStart6] = EntropyDecodeVals(GAMMARowStartcodeRE,GAMMARowStartcountsRE,GAMMARowStartlenRE,dictLen,countsBinsRowStartGAMMA,level);
+    [GAMMAdiffRow6 ] = EntropyDecodediffRow(GAMMAdiffRowcodeRE,GAMMAdiffRowcountsRE,GAMMARowStart6,GAMMAval6,countsBinsRowDiffGAMMA,level);
+    [GAMMAdiffCol6 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcodeRE,GAMMAdiffColcountsRE,countsBinsColDiffGAMMA,level,Kpar);
 
     bins = Qpar.Dictbins;
     DEFAULTBINS = 32;
@@ -467,11 +469,11 @@ end
     countsBinsRowStartDict  = DEFAULTBINS;
     countsBinsRowDiffDict   = DEFAULTBINS;
     countsBinsColDiffDict   = DEFAULTBINS;
-    [Dictval6] = EntropyDecodeVals(DictvalcodeRE,DictvalcountsRE,DictvallenRE,bins,countsBinsValsDict,Wpar.level);
+    [Dictval6] = EntropyDecodeVals(DictvalcodeRE,DictvalcountsRE,DictvallenRE,bins,countsBinsValsDict,level);
     [Dictneg6] = CONT2Cell(DictnegcodeRE,Dictval6);
-    [DictRowStart6] = EntropyDecodeVals(DictRowStartcodeRE,DictRowStartcountsRE,DictRowStartlenRE,dictLen,countsBinsRowStartDict,Wpar.level);
-    [DictdiffRow6 ] = EntropyDecodediffRow(DictdiffRowcodeRE,DictdiffRowcountsRE,DictRowStart6,Dictval6,countsBinsRowDiffDict,Wpar.level);
-    [DictdiffCol6 ] = EntropyDecodediffColDict(DictdiffColcodeRE,DictdiffColcountsRE,countsBinsColDiffDict,Wpar.level,Kpar);
+    [DictRowStart6] = EntropyDecodeVals(DictRowStartcodeRE,DictRowStartcountsRE,DictRowStartlenRE,dictLen,countsBinsRowStartDict,level);
+    [DictdiffRow6 ] = EntropyDecodediffRow(DictdiffRowcodeRE,DictdiffRowcountsRE,DictRowStart6,Dictval6,countsBinsRowDiffDict,level);
+    [DictdiffCol6 ] = EntropyDecodediffColDict(DictdiffColcodeRE,DictdiffColcountsRE,countsBinsColDiffDict,level,Kpar);
 
     [GAMMArow6,GAMMAcol6]   = DeDiffCCS(GAMMAdiffCol6,GAMMARowStart6,GAMMAdiffRow6);
     [Dictrow6 ,Dictcol6   ] = DeDiffCCS(DictdiffCol6,DictRowStart6,DictdiffRow6);

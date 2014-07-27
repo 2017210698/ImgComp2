@@ -3,10 +3,11 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
     H = Coef(1,:); %#ok<NASGU>
     V = Coef(2,:); %#ok<NASGU>
     D = Coef(3,:); %#ok<NASGU>
-    level   = Wpar.level;
+    level   = 6;
     GAMMA   = cell(3,level);
     PSNR    = Kpar.targetPSNR;
-    MSE     = 255^2*10^(-PSNR/10);
+%     MSE     = 255^2*10^(-PSNR/10);
+    MSE     = 1^2*10^(-PSNR/10);
     band = {'H','V','D'};
     % for each level each dirction train dictionary
     mm = size(GAMMA,1); % bands

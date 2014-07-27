@@ -1,4 +1,4 @@
-function coeffs = decdemo( im, option )
+opefunction coeffs = decdemo( im, option )
 % DECDEMO   Demonstrates contourlet decomposition and reconstruction. 
 %
 %   DECDEMO shows how to use the contourlet toolbox to decompose

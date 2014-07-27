@@ -18,7 +18,8 @@ function [A,err] = TrainDict(B,Kpar,level)
      
     % Train each patch under TargetPSNR ->MSE->Edata
     params2d.Tdict   = TdictMaxAtoms;  
-    MSE = 255^2*10^(-PSNR/10);
+%     MSE = 255^2*10^(-PSNR/10);
+    MSE = 1^2*10^(-PSNR/10);
     params2d.Edata = sqrt(MSE*m); 
     
     % Sparse KSVD RUN
