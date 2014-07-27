@@ -10,6 +10,7 @@ function [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar
     addpath('generalFunctions/');
     addpath('arithcoFunctions/');
     addpath('fileFunctions/');
+    addpath('contourlet_toolbox/');
 %% get Image 
 Im= imread(filename);
 f1m=2;f1n=2;
