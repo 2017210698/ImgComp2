@@ -8,7 +8,7 @@ function main (THREAD_ID)
     %% Inner Iteration param
     rng('shuffle');
      global Gpar;    
-     N    = 20;   
+     N    = 2;   
      iter = 1;
      FEATURES = 12;
      TAGS     = 3;
@@ -25,8 +25,12 @@ while(1)
         wavelet_names = {'sym16','9-7','pkva'};
         wave_ind      = randi(length(wavelet_names));
         
-        Wpar.pfilt = wavelet_names{wave_ind};
         Wpar.dfilt = wavelet_names{wave_ind};
+        if(strcmp(Wpar.dfilt,'pkva'));
+            Wpar.pfilt = '9-7';
+        else
+            Wpar.pfilt = wavelet_names{wave_ind};
+        end
         Wpar.level = [0,0,0,0,0,0];
        
 %         Wpar.plots = 0;
@@ -40,7 +44,7 @@ while(1)
         Kpar.dictBigMaxAtoms   = randi(min(floor(Kpar.Rbig^2  *Gpar.pSizeBig  ),7));
         Kpar.dictSmallMaxAtoms = randi(min(floor(Kpar.Rsmall^2*Gpar.pSizeSmall),7));
         Kpar.trainPSNR         = Kpar.targetPSNR + randi(5) - 1;
-        Kpar.iternum           = 50;
+        Kpar.iternum           = 1;
         Kpar.printInfo         = 0;
         Kpar.plots             = 0;
     %% Quantization (GAMMA,Dict)
