@@ -357,14 +357,21 @@ if(Gpar.plotBppPie)
 
     [VARSLENS,ind]=sort(VARSLEN,'descend');
     varslabelsS = cell(size(varslabels));
+    ELEMNUM = 9;
     for i=1:length(varslabels)
-        if(i<13)
+        if(i<ELEMNUM)
             varslabelsS{i}=varslabels{ind(i)};
+            % add bpp
+            varslabelsS{i}=strcat(varslabelsS{i},sprintf(':%.3f',VARSLENS(i)/Gpar.mIm/Gpar.nIm));
+        elseif(i==ELEMNUM)
+            varslabelsS{i}=sprintf('All Rest:%.3f(Bpp)',sum(VARSLENS(i:end))/Gpar.mIm/Gpar.nIm);
         else
             varslabelsS{i}=' ';
         end
     end
     figure; pie(VARSLENS,varslabelsS)
+    PSNR = -1;
+    title(sprintf('IMG:%s, PSNR:%.2f, Bpp:%.3f',filename,PSNR,filesize/Gpar.mIm/Gpar.nIm));
 end
 %% reading and reconstruction
     % outfilename = 'im1';

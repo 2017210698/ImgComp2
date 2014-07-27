@@ -10,6 +10,7 @@ function [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar
     addpath('generalFunctions/');
     addpath('arithcoFunctions/');
     addpath('fileFunctions/');
+    addpath('contourlet_toolbox/');
 %% get Image 
 Im= imread(filename);
 f1m=2;f1n=2;
@@ -48,10 +49,8 @@ end
     Dict = TrainDictCells(Coef,Kpar);
 %% Normalize Dictionaries (degree of freedom)
     for i=1:size(Dict,1)
-        for j=1:size(Dict,2)
-            for row=1:size(Dict{i,j},1)      
+        for j=1:size(Dict,2)     
                 Dict{i,j}=Dict{i,j}./max(abs(Dict{i,j}(:)));
-            end
         end
     end
     
@@ -339,34 +338,40 @@ BPP = filesize/numel(Im);
 
 fclose(fid);
 %% stat
+if(Gpar.plotBppPie)
+    varslabels = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
+                  ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
+                  ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
+                  ,'DictdiffRowcode','DictdiffColcode'...
+                  ,'GAMMAvalcounts','GAMMARowStartcounts'...
+                  ,'GAMMAdiffRowcounts','GAMMAdiffColcounts'...
+                  ,'Dictvalcounts','DictRowStartcounts'...
+                  ,'DictdiffRowcounts','DictdiffColcounts'...
+                  ,'Ap'...
+                  ,'GAMMAmaxq'...
+                  ,'CodeHeaders'...
+                  ,'CountsHeaders'...
+                  ,'vallen'...
+                  };
+    VARSLEN      = [CODEVARSLEN,COUNTVARSLEN,APLEN,GAMNAMAXLEN,CODEVARSHEDLEN,COUNTVARSHEDLEN,VALLENVARSLEN];
 
-varslabels = {'GAMMAvalcode','GAMMAnegcode','GAMMARowStartcode'...
-              ,'GAMMAdiffRowcode','GAMMAdiffColcode'...
-              ,'Dictvalcode','Dictnegcode','DictRowStartcode'...
-              ,'DictdiffRowcode','DictdiffColcode'...
-              ,'GAMMAvalcounts','GAMMARowStartcounts'...
-              ,'GAMMAdiffRowcounts','GAMMAdiffColcounts'...
-              ,'Dictvalcounts','DictRowStartcounts'...
-              ,'DictdiffRowcounts','DictdiffColcounts'...
-              ,'Ap'...
-              ,'GAMMAmaxq'...
-              ,'CodeHeaders'...
-              ,'CountsHeaders'...
-              ,'vallen'...
-              };
-VARSLEN      = [CODEVARSLEN,COUNTVARSLEN,APLEN,GAMNAMAXLEN,CODEVARSHEDLEN,COUNTVARSHEDLEN,VALLENVARSLEN];
-
-[VARSLENS,ind]=sort(VARSLEN,'descend');
-varslabelsS = cell(size(varslabels));
-for i=1:length(varslabels)
-    if(i<13)
-        varslabelsS{i}=varslabels{ind(i)};
-    else
-        varslabelsS{i}=' ';
+    [VARSLENS,ind]=sort(VARSLEN,'descend');
+    varslabelsS = cell(size(varslabels));
+    ELEMNUM = 9;
+    for i=1:length(varslabels)
+        if(i<ELEMNUM)
+            varslabelsS{i}=varslabels{ind(i)};
+            % add bpp
+            varslabelsS{i}=strcat(varslabelsS{i},sprintf(':%.3f',VARSLENS(i)/Gpar.mIm/Gpar.nIm));
+        elseif(i==ELEMNUM)
+            varslabelsS{i}=sprintf('All Rest:%.3f(Bpp)',sum(VARSLENS(i:end))/Gpar.mIm/Gpar.nIm);
+        else
+            varslabelsS{i}=' ';
+        end
     end
+    figure; pie(VARSLENS,varslabelsS)
+    title(sprintf('Img:%s,PSNR:%.2f,Bpp:%.3f',filename,PSNR,));
 end
-figure; pie(VARSLENS,varslabelsS)
-
 %% reading and reconstruction
     % outfilename = 'im1';
     fid = fopen(outfilename,'r');
@@ -470,7 +475,7 @@ figure; pie(VARSLENS,varslabelsS)
     Im_rec6    = WaveletDecode(ApRE,tmpCoef6,Wpar);
 
     % eval
-    MSE    = norm(double(Im)-Im_rec4,'fro')^2/numel(Im);
+    MSE    = norm(double(Im)-Im_rec6,'fro')^2/numel(Im);
     PSNR   = 10*log10(255^2/MSE);
     fprintf(' FINAL  PSNR:%.2f\n',PSNR);
     fprintf(' FINAL  Bpp :%.4f\n',BPP);

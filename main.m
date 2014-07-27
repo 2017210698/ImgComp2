@@ -30,7 +30,6 @@ clear all; close all; clc
 %% Optimazie Gamma
     Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
-
 [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
 ImRE = ImgRead(outfilename,Kpar,Wpar,Qpar,Opar);
 figure;imshow(ImRE,[])
