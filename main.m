@@ -6,7 +6,7 @@ clear all; close all; clc
     Gpar.pSizeBig    = 8;
     Gpar.pSizeSmall  = 4;
     Gpar.plotReconst = 0;
-    Gpar.plotBppPie  = 0;
+    Gpar.plotBppPie  = 1;
 %% Wavelet param
     Wpar.wavelet_name = 'sym16'; dwtmode('per','nodisp');  
     Wpar.plots = 0;
