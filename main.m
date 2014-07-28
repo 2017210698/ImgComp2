@@ -8,14 +8,15 @@ function main (THREAD_ID)
     %% Inner Iteration param
     rng('shuffle');
      global Gpar;    
-     N    = 2;   
+     N    = 20;   
      iter = 1;
      FEATURES = 12;
      TAGS     = 3;
 while(1)
     XTOT = zeros(N,FEATURES);
     YTOT = zeros(N,TAGS);
-    for ii=1:N
+    ii=1;
+    while(ii<=N)
     %% Global param
         Gpar.pSizeBig    = 2 + randi(6);
         Gpar.pSizeSmall  = 2 + randi(3);
@@ -44,7 +45,7 @@ while(1)
         Kpar.dictBigMaxAtoms   = randi(min(floor(Kpar.Rbig^2  *Gpar.pSizeBig  ),7));
         Kpar.dictSmallMaxAtoms = randi(min(floor(Kpar.Rsmall^2*Gpar.pSizeSmall),7));
         Kpar.trainPSNR         = Kpar.targetPSNR + randi(5) - 1;
-        Kpar.iternum           = 1;
+        Kpar.iternum           = 20; 
         Kpar.printInfo         = 0;
         Kpar.plots             = 0;
     %% Quantization (GAMMA,Dict)
@@ -54,9 +55,8 @@ while(1)
     %% Optimazie Gamma
         Opar.plots = 0;
         Opar.order = 'GAMMA'; % gamma columned descend population
-
-        [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
-        X = [PSNR                  ...
+        
+        X = [-1                    ...
             ,Kpar.targetPSNR       ...
             ,Kpar.trainPSNR        ...
             ,Gpar.pSizeBig         ...
@@ -69,9 +69,18 @@ while(1)
             ,Qpar.GAMMAbins        ...
             ,Qpar.Dictbins         ...
             ];
-        Y = [NNZD,NNZG,BPP];
+        
+        try
+             [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
+        catch 
+             save(sprintf('errData/errDATA%s%d',THREAD_ID,iter),'X','YTOT');
+             continue;
+        end
+        X(1)       = PSNR;
+        Y          = [NNZD,NNZG,BPP];
         XTOT(ii,:) = X;
         YTOT(ii,:) = Y;
+        ii = ii +1;
     end
     save(sprintf('dataSimul/DATA%s%d',THREAD_ID,iter),'XTOT','YTOT');
     iter = iter +1;

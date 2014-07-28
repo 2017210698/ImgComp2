@@ -194,6 +194,7 @@ countsBinsColDiffGAMMA   = DEFAULTBINS;
 
 dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));% max dict len
 [GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
+% dbstop in EntropyEncodediffRow
 [GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
 GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);

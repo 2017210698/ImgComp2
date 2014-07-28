@@ -12,7 +12,7 @@ function [GAMMAdiffRow ] = EntropyDecodediffRow(code,counts,GAMMARowStart,GAMMAv
             LEN = LEN + LENCELL{i,j};
         end
     end
-    if(LEN~=0)
+    if(LEN>1)
         % de quantize counts
         probLOGQ   = counts; 
         probLOGRE  = probLOGQ/(countsBins-1);
@@ -25,10 +25,14 @@ function [GAMMAdiffRow ] = EntropyDecodediffRow(code,counts,GAMMARowStart,GAMMAv
     ptr =1;
     for j=1:n
         for i=1:m   
-             if(LEN~=0)
+             if(LEN>1)
                  TMPLEN = LENCELL{i,j};
                  GAMMAdiffRow{i,j} = dseq(ptr:ptr+TMPLEN-1);
                  ptr=ptr+TMPLEN;        
+             elseif(LEN==1)
+                 if((j*m+i)==counts)
+                     GAMMAdiffRow{i,j} = code;
+                 end
              else
                  GAMMAdiffRow{i,j} = zeros(1,0);
              end

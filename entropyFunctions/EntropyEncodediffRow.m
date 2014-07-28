@@ -9,7 +9,7 @@ function [code,probLOGQ] = EntropyEncodediffRow(GAMMA,bins,countsBins)
         end
     end
     
-    if(~isempty(GAMMACONT))
+    if(~isempty(GAMMACONT) && length(GAMMACONT)~=1)
         % probabilties calc
         countsTmp = zeros(1,bins); % ** initiate to ones for zeros are not allowed
         for i=1:length(GAMMACONT);
@@ -35,8 +35,11 @@ function [code,probLOGQ] = EntropyEncodediffRow(GAMMA,bins,countsBins)
 %         fprintf('****Entropy Code DiffRow****\n');
 %         fprintf('  length(code):    %g\n  length(old_code):%g\n  LOST:            %g Byte\n  SAVED:           %g Byte, REMOVE(CPU HEAVY)\n',...
 %                  length(code),length(old_code),(length(code)-length(old_code))/8,SAVED);
-    else
+    elseif (isempty(GAMMACONT) )
         code = 0;
         probLOGQ = 0;
+    elseif (length(GAMMACONT)==1)
+        code = GAMMACONT;
+        probLOGQ = find(~cellfun(@isempty,GAMMA));
     end
 end
