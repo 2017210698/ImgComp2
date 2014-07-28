@@ -1,5 +1,4 @@
-function [X,Y] = Smain()
-clear all; close all;
+function [X,Y] = Smain(FEATURE_IND)
 
 % X = [PSNR                  ...
 %     ,Kpar.targetPSNR       ...
@@ -32,7 +31,7 @@ end
 
 %% Plot Bpp vs PSNR
 
-FEATURE_IND = 5;
+% FEATURE_IND = 5;
 
     switch FEATURE_IND
         % natural
@@ -49,29 +48,29 @@ FEATURE_IND = 5;
         % Patch size Small
         case 5
             FEATURE = 5;
-            VALS = 3:8;
+            VALS = 3:6;
             map = copper(length(VALS));
             TITLE = 'Color by Patch Size Small';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % wavelet ind
         case 6
             FEATURE = 6;
-            VALS = 1:4;
-            map = copper(length(VALS));
+            VALS = 1:3;
+            map = hsv(length(VALS));
             TITLE = 'Color by Wavelet';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Rbig
         case 7 
             FEATURE = 7;
             VALS = 1:0.5:3.5;
-            map = copper(length(VALS));
+            map = hsv(length(VALS));
             TITLE = 'Color by Rbig';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % RSmall
         case 8 
             FEATURE = 8;
             VALS = 1:0.5:3.5;
-            map = copper(length(VALS));
+            map = hsv(length(VALS));
             TITLE = 'Color by RSmall';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % dictBigMaxAtoms
