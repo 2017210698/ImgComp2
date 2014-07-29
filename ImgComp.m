@@ -17,13 +17,7 @@ f1m=2;f1n=2;
     global Gpar;
       Gpar.mIm        = size(Im,1);
       Gpar.nIm        = size(Im,2);
-      
-      
-      
-      
-          X= [1,2];
-          X = [X;3];
-      
+           
 if(Gpar.plotReconst)
     f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 end

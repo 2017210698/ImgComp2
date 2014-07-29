@@ -1,7 +1,7 @@
 function main(TPSNR)
 %% High PSNR patch size fit
-PatchSize = 4:5;
-expLevel  = 1:2;
+PatchSize = 3:8;
+expLevel  = 1:6;
 
 NNZD = -1*ones(length(expLevel),length(PatchSize));
 NNZG = -1*ones(size(NNZD));

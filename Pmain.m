@@ -25,7 +25,7 @@ function [NNZD,NNZG,PSNR,BPP] = Pmain(expLevel,PatchSize,TPSNR)
     Kpar.dictBigMaxAtoms   = 2; 
     Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
     Kpar.trainPSNR         = Kpar.targetPSNR + 5;
-    Kpar.iternum           = 1;
+    Kpar.iternum           = 100;
     Kpar.printInfo         = 0;
     Kpar.plots             = 0;
 %% Quantization (GAMMA,Dict)
