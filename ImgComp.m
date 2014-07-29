@@ -15,8 +15,6 @@ function [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar
 Im= imread(filename);
 f1m=2;f1n=2;
     global Gpar;
-%     Gpar.pSizeBig   = 7;
-%     Gpar.pSizeSmall = 3;
       Gpar.mIm        = size(Im,1);
       Gpar.nIm        = size(Im,2);
       
@@ -24,9 +22,6 @@ if(Gpar.plotReconst)
     f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 end
 %% Wavelet Transform
-%     Wpar.wavelet_name = 'sym8'; dwtmode('per','nodisp');  
-%     Wpar.plots = 1;
-%     Wpar.level = 6;
     [Ap,Coef] = WaveletEncode(Im,Wpar);
     % Coef are H,V,D 2d wavelet coeffiencets in cell array  
     
@@ -38,14 +33,6 @@ if(Gpar.plotReconst)
     fprintf(sprintf('Wavelet PSNR %.2f\n',PSNR));
 end
 %% Sparse KSVD (Train Dictionaries)
-%     Kpar.perTdictBig   = 0.01;
-%     Kpar.perTdictSmall = 0.02;
-%     Kpar.Rbig          = 3;
-%     Kpar.Rsmall       = 3;
-%     Kpar.trainPSNR = 32;
-%     Kpar.iternum   = 15;
-%     Kpar.printInfo = 0;
-%     Kpar.plots     = 0;
     Dict = TrainDictCells(Coef,Kpar);
 %% Normalize Dictionaries (degree of freedom)
     for i=1:size(Dict,1)
@@ -61,10 +48,7 @@ TARGET = Kpar.targetPSNR;
 iter   = 1;
 while(abs(PSNR-TARGET)>1e-2 && iter<10);
     %% GOMP (Sparse representations) 
-    %     Kpar.gomp_test =1;
-    %     Kpar.targetPSNR = 40;
         [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
-
 
     % eval 
     NNZG    = cellArrayNNZ(GAMMA);
@@ -83,10 +67,7 @@ while(abs(PSNR-TARGET)>1e-2 && iter<10);
         figure(f1);subplot(f1m,f1n,2);imshow(Im_rec0,[]);title(sprintf('GOMP reconstrucion PSNR:%.2f',PSNR));
     end
     %% Quantization (GAMMA,Dict)
-    %     Qpar.GAMMAbins = 2^6;
-    %     Qpar.Dictbins  = 2^5;
-    %     Qpar.infoDyRange = 0;
-
+ 
         [GAMMAq,GAMMAqMAX,GAMMANegSigns] = QuantizeGAMMA(GAMMA,Qpar);
         [Dictq ,DictNegSigns]            = QuantizeDict(Dict,Qpar);
 
@@ -109,8 +90,7 @@ while(abs(PSNR-TARGET)>1e-2 && iter<10);
     iter = iter+1;
 end
 %% Optimazie Gamma
-%     Opar.plots = 0;
-%     Opar.order = 'GAMMA'; % gamma columned descend population
+
     [GAMMAq,Dictq,GAMMANegSigns,DictNegSigns] = AlterRowCol(GAMMAq,Dictq,GAMMANegSigns,DictNegSigns,Opar);
 
 if(Gpar.plotReconst)    

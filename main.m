@@ -20,22 +20,22 @@ clear all; close all; clc
 %% Sparse KSVD (Train Dictionaries)
     Kpar.Rbig              = 3;
     Kpar.Rsmall            = 3;
-    Kpar.dictBigMaxAtoms   = 3; 
-    Kpar.dictSmallMaxAtoms = 3;    % (MAX = dictLen = R*pSize;)
+    Kpar.dictBigMaxAtoms   = 2; 
+    Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
     Kpar.trainPSNR         = Kpar.targetPSNR + 5;
     Kpar.iternum           = 10;
     Kpar.printInfo         = 0;
     Kpar.plots             = 0;
 %% Quantization (GAMMA,Dict)
-    Qpar.GAMMAbins = 64;
-    Qpar.Dictbins  = 64;
+    Qpar.GAMMAbins = 32;
+    Qpar.Dictbins  = 32;
     Qpar.infoDyRange = 0;
 %% Optimazie Gamma
     Opar.plots = 0;
     Opar.order = 'GAMMA'; % gamma columned descend population
 [NNZD,NNZG,PSNR,BPP] = ImgComp(filename,outfilename,Kpar,Wpar,Qpar,Opar);
 ImRE = ImgRead(outfilename,Kpar,Wpar,Qpar,Opar);
-figure;imshow(ImRE,[])
+% figure;imshow(ImRE,[])
 % TODO:
 % remove DC's
 % combine same levels

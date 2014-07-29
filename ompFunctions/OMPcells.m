@@ -26,7 +26,7 @@ function [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar)
             end
             R       =  DictRedundancy(Rtmp,m); % dictionary reduandancy
 %                 fprintf('Eligable Dictionary redudnacy for patch size:%d is R:%.4f\n',m,R);
-            dictLen =  R*m;
+            dictLen =  round(R*m);
             phi = kron(odctdict(sqrt(m),sqrt(dictLen)),odctdict(sqrt(m),sqrt(dictLen)));
             DD  = phi*Dict{i,j}; % Xr = phi*A*Gamma;
             epsilon = sqrt(MSE*numel(X));

@@ -9,10 +9,10 @@ function [A,err] = TrainDict(B,Kpar,level)
         Rtmp     = Kpar.Rsmall;
     end
     R       = DictRedundancy(Rtmp,m); % dictionary reduandancy
-    dictLen = R*m;
+    dictLen = round(R*m);
     params2d.iternum = Kpar.iternum;
     params2d.data = X;                                
-    params2d.initA = speye(R*m);              
+    params2d.initA = speye(round(R*m));              
     params2d.basedict{1} = odctdict(sqrt(m),sqrt(dictLen));   
     params2d.basedict{2} = odctdict(sqrt(m),sqrt(dictLen));         
      
