@@ -18,6 +18,12 @@ f1m=2;f1n=2;
       Gpar.mIm        = size(Im,1);
       Gpar.nIm        = size(Im,2);
       
+      
+      
+      
+          X= [1,2];
+          X = [X;3];
+      
 if(Gpar.plotReconst)
     f1 = figure();subplot(f1m,f1n,1);imshow(Im,[]);title('Original Image')
 end
@@ -172,7 +178,7 @@ countsBinsColDiffGAMMA   = DEFAULTBINS;
 [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsValsGAMMA);
 [GAMMAnegcode] = Cell2CONT(GAMMAneg);
 
-dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));% max dict len
+[~,~,dictLen] = DictSize(0,Kpar);
 [GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
 [GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
@@ -214,7 +220,7 @@ countsBinsColDiffDict   = DEFAULTBINS;
 [Dictvalcode,Dictvalcounts,Dictvallen] = EntropyEncodeVals(Dictval,bins,countsBinsValsDict);
 [Dictnegcode] = Cell2CONT(Dictneg);
 
-dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));
+[~,~,dictLen] = DictSize(0,Kpar);
 [DictRowStartcode,DictRowStartcounts,DictRowStartlen] = EntropyEncodeVals(DictRowStart,dictLen,countsBinsRowStartDict);
 [DictdiffRowcode,DictdiffRowcounts] = EntropyEncodediffRow(DictdiffRow,dictLen,countsBinsRowDiffDict);
 
@@ -436,7 +442,7 @@ end
     countsBinsRowStartGAMMA  = DEFAULTBINS;
     countsBinsRowDiffGAMMA   = DEFAULTBINS;
     countsBinsColDiffGAMMA   = DEFAULTBINS;
-    dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));
+    [~,~,dictLen] = DictSize(0,Kpar);
     [GAMMAval6] = EntropyDecodeVals(GAMMAvalcodeRE,GAMMAvalcountsRE,GAMMAvallenRE,bins,countsBinsValsGAMMA,level);
     [GAMMAneg6] = CONT2Cell(GAMMAnegcodeRE,GAMMAval6);
     [GAMMARowStart6] = EntropyDecodeVals(GAMMARowStartcodeRE,GAMMARowStartcountsRE,GAMMARowStartlenRE,dictLen,countsBinsRowStartGAMMA,level);
