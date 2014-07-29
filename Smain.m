@@ -1,4 +1,4 @@
-function [X,Y] = Smain(FEATURE_IND)
+function [X,Y] = Smain(FEATURE_IND,markerSize,marker)
 
 % X = [PSNR                  ...
 %     ,Kpar.targetPSNR       ...
@@ -32,7 +32,10 @@ end
 %% Plot Bpp vs PSNR
 
 % FEATURE_IND = 5;
-
+    global MarkerSize;
+    global Marker;
+    MarkerSize = markerSize;
+    Marker     = marker;
     switch FEATURE_IND
         % natural
         case 0  
@@ -106,23 +109,49 @@ end
     end
 end
 
-function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
+function paint_and_leg(PSNR,BPP,map,FEATURE,VALS,TITLE)
+    global MarkerSize;
+    global Marker;
     figure;
-    for i=1:length(X)
-        YTMP = Y(i,3); % Bpp
-        XTMP = X(i,1); % PSNR
-        ind  = (X(i,FEATURE)==VALS);
-        COL  = map(ind,:); % Big patch size
-        plot(YTMP,XTMP,'.','color',COL); hold on;
+    subplot(1,2,1);
+    xyBestFit = inf(2,10);
+    
+    for i=1:length(PSNR)
+        BPPTMP = BPP(i,3); % Bpp
+        PSNRTMP = PSNR(i,1); % PSNR
+        for m=1:length(xyBestFit)
+            if(abs(m+25-1-PSNRTMP)<0.4)
+                if(BPPTMP<xyBestFit(1,m))
+                    xyBestFit(1,m)=BPPTMP;
+                    xyBestFit(2,m)=PSNRTMP;
+                end
+            end
+        end
     end
+    xyBestFit(xyBestFit==inf)=NaN;
+
+    
+    
+    for i=1:length(PSNR)
+        BPPTMP = BPP(i,3); % Bpp
+        PSNRTMP = PSNR(i,1); % PSNR
+        ind  = (PSNR(i,FEATURE)==VALS);
+        COL  = map(ind,:); % Big patch size
+        plot(BPPTMP,PSNRTMP,Marker,'color',COL,'MarkerSize',MarkerSize); hold on;
+    end
+        plot(xyBestFit(1,:),xyBestFit(2,:),'MarkerSize',30);
+
     title(TITLE);
 
     LEG = cell(1,length(VALS));
-    figure;
+    subplot(1,2,2);
     for i=1:size(map,1)
         plot(VALS(i),VALS(i),'.','color',map(i,:),'MarkerSize',30); hold on;
          LEG{i} = sprintf('%g',VALS(i));
     end
     legend(LEG);
     title(TITLE);
+    
+    
+    
 end
