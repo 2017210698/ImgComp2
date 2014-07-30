@@ -9,7 +9,7 @@ fprintf('Level 0 == Approx , Level 6 8x8\n');
 % plotting
 COL1 = lines(length(expLevel));
 m=1;n=3;
-figure('units','normalized','outerposition',[0 0 1 1])
+figure;
 legendText1 = cell(1,length(COL1));
 
 % plotting BPP
@@ -47,7 +47,7 @@ for ll=1:length(expLevel)
     plot(PatchSize,TOTNNZ(ll,:),'Color',COL1(ll,:));hold on;
     legendText3{ll}  = sprintf('level %d NNZTOT',ll);
 end
-legend(legendText3);
+legend(legendText3,'best');
 title('NNZ TOT vs PatchSize');
 xlabel('PatchSize');
 ylabel('NNZ');
