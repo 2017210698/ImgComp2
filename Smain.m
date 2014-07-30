@@ -1,4 +1,8 @@
-function [X,Y] = Smain(FEATURE_IND,markerSize,marker)
+function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,marker)
+
+% use: [X,Y] = Smain(FEATURE_IND,ACTIVEVALUES,markerSize,marker)
+% exp: [X,Y] = Smain(4,[4,5,6],10,'.');
+% exp: [X,Y] = Smain(4,0,10,'.'); ACTIVEVALUES = [0] means all values
 
 % X = [PSNR                  ...
 %     ,Kpar.targetPSNR       ...
@@ -34,8 +38,11 @@ end
 % FEATURE_IND = 5;
     global MarkerSize;
     global Marker;
+    global ActiveInd;
     MarkerSize = markerSize;
     Marker     = marker;
+    ActiveInd  = activeInd;
+    
     switch FEATURE_IND
         % natural
         case 0  
@@ -45,63 +52,63 @@ end
         case 4
             FEATURE = 4;
             VALS = 3:8;
-            map = copper(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by Patch Size Big';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Patch size Small
         case 5
             FEATURE = 5;
             VALS = 3:6;
-            map = copper(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by Patch Size Small';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % wavelet ind
         case 6
             FEATURE = 6;
             VALS = 1:3;
-            map = hsv(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by Wavelet';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Rbig
         case 7 
             FEATURE = 7;
             VALS = 1:0.5:3.5;
-            map = hsv(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by Rbig';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % RSmall
         case 8 
             FEATURE = 8;
             VALS = 1:0.5:3.5;
-            map = hsv(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by RSmall';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % dictBigMaxAtoms
         case 9
             FEATURE = 9;
             VALS = 7:-1:1;
-            map = copper(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by dictBigMaxAtoms';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % dictSmallMaxAtoms
         case 10
             FEATURE = 10;
             VALS = 7:-1:1;
-            map = copper(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by dictSmallMaxAtoms';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % GAMMAbins
         case 11
             FEATURE = 11;
             VALS = 10:10:80;
-            map = hsv(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by GAMMAbins Quant';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Dictbins
         case 12
             FEATURE = 12;
             VALS = 10:10:80;
-            map = hsv(length(VALS));
+            map = lines(length(VALS));
             TITLE = 'Color by Dictbins Quant';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
 
@@ -112,6 +119,7 @@ end
 function paint_and_leg(PSNR,BPP,map,FEATURE,VALS,TITLE)
     global MarkerSize;
     global Marker;
+    global ActiveInd;
     figure;
     subplot(1,2,1);
     xyBestFit = inf(2,10);
@@ -136,11 +144,15 @@ function paint_and_leg(PSNR,BPP,map,FEATURE,VALS,TITLE)
         BPPTMP = BPP(i,3); % Bpp
         PSNRTMP = PSNR(i,1); % PSNR
         ind  = (PSNR(i,FEATURE)==VALS);
-        COL  = map(ind,:); % Big patch size
-        plot(BPPTMP,PSNRTMP,Marker,'color',COL,'MarkerSize',MarkerSize); hold on;
+        if(max(VALS(ind)==ActiveInd) || max(ActiveInd==0))
+            COL  = map(ind,:); % Big patch size
+            plot(BPPTMP,PSNRTMP,Marker,'color',COL,'MarkerSize',MarkerSize); hold on;
+        end
     end
-        plot(xyBestFit(1,:),xyBestFit(2,:),'MarkerSize',30);
-
+    plot(xyBestFit(1,:),xyBestFit(2,:),'MarkerSize',30);
+    xlim([0 0.2]);
+    ylim([24 36]);
+    
     title(TITLE);
 
     LEG = cell(1,length(VALS));
