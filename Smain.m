@@ -1,9 +1,9 @@
 function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,marker)
-
 % use: [X,Y] = Smain(FEATURE_IND,ACTIVEVALUES,markerSize,marker)
 % exp: [X,Y] = Smain(4,[4,5,6],10,'.');
 % exp: [X,Y] = Smain(4,0,10,'.'); ACTIVEVALUES = [0] means all values
-
+% 
+% Feature vector:
 % X = [PSNR                  ...
 %     ,Kpar.targetPSNR       ...
 %     ,Kpar.trainPSNR        ...
@@ -17,8 +17,25 @@ function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,marker)
 %     ,Qpar.GAMMAbins        ...
 %     ,Qpar.Dictbins         ...
 %     ];
+% TAGS vector
 % Y = [NNZD,NNZG,BPP];
 
+    if(nargin>0);
+        [X,Y] = SmainTOP(FEATURE_IND,activeInd,markerSize,marker);
+    else
+        FEATURE = 11;
+        VALS    = 20:10:80;
+        for i =1:length(VALS)
+            SmainTOP(FEATURE,VALS(i),10,'.');        
+        end
+        X=0;Y=0;
+    end
+
+end
+
+
+
+function [X,Y] = SmainTOP(FEATURE_IND,activeInd,markerSize,marker)
 
 %% Get data
 
@@ -100,14 +117,14 @@ end
         % GAMMAbins
         case 11
             FEATURE = 11;
-            VALS = 10:10:80;
+            VALS = 20:10:80;
             map = lines(length(VALS));
             TITLE = 'Color by GAMMAbins Quant';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
         % Dictbins
         case 12
             FEATURE = 12;
-            VALS = 10:10:80;
+            VALS = 20:10:80;
             map = lines(length(VALS));
             TITLE = 'Color by Dictbins Quant';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
@@ -120,7 +137,7 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
     global MarkerSize;
     global Marker;
     global ActiveInd;
-    figure;
+    figure('units','normalized','outerposition',[0 0 1 1])
     subplot(1,2,1);
     xyBestFit = inf(2,10);
     
@@ -157,7 +174,7 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
     xlim([0 0.2]);
     ylim([25 36]);
     
-    title(TITLE);
+    title(sprintf('%s, activeValues:%s',TITLE,mat2str(ActiveInd)));
 
     LEG = cell(1,length(VALS));
     subplot(1,2,2);
