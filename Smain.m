@@ -1,6 +1,7 @@
 %% Plot result
 
-filename = '32PSNRres';
+% filename = '32PSNRres';
+filename = '25PSNRres';
 load(sprintf('dataSimul/%s',filename));
 
 
