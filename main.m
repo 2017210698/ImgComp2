@@ -3,39 +3,34 @@ function main (THREAD_ID)
     addpath('/home/soron/matlab_exp/ksvdbox11');
     addpath('/home/soron/matlab_exp/ompbox1');
     %% Picture pram
-        filename = 'barbara.gif';
+        IMGNUM = 10;
         outfilename = sprintf('%sbarOut',THREAD_ID);  
     %% Inner Iteration param
     rng('shuffle');
      global Gpar;    
      N    = 20;   
-     iter = 1;
-     FEATURES = 12;
+     FEATURES = 13;
      TAGS     = 3;
+     iter = 1; % iterator
 while(1)
     XTOT = zeros(N,FEATURES);
     YTOT = zeros(N,TAGS);
     ii=1;
     while(ii<=N)
+        fileno = randi(IMGNUM);
+        filename = sprintf('images/%d.gif',fileno);
     %% Global param
         Gpar.pSizeBig    = 2 + randi(6);
         Gpar.pSizeSmall  = 2 + randi(3);
         Gpar.plotReconst = 0;
         Gpar.plotBppPie  = 0;
     %% Wavelet param
-        wavelet_names = {'sym16','9-7','pkva'};
+        wavelet_names = {'sym16','9-7'};
         wave_ind      = randi(length(wavelet_names));
         
         Wpar.dfilt = wavelet_names{wave_ind};
-        if(strcmp(Wpar.dfilt,'pkva'));
-            Wpar.pfilt = '9-7';
-        else
-            Wpar.pfilt = wavelet_names{wave_ind};
-        end
+        Wpar.pfilt = wavelet_names{wave_ind};
         Wpar.level = [0,0,0,0,0,0];
-       
-%         Wpar.plots = 0;
-%         Wpar.level = 6; % DONOT change for now
     %% GOMP (Sparse representations) 
         Kpar.gomp_test  = 0;
         Kpar.targetPSNR = 25 + randi(10);
@@ -68,6 +63,7 @@ while(1)
             ,Kpar.dictSmallMaxAtoms... 
             ,Qpar.GAMMAbins        ...
             ,Qpar.Dictbins         ...
+            ,fileno                ...
             ];
         
         try
