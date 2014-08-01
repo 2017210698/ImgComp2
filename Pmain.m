@@ -1,5 +1,5 @@
-function [NNZD,NNZG,PSNR,BPP] = Pmain(expLevel,PatchSize,TPSNR)
-   filename = 'barbara.gif';
+function [NNZD,NNZG,PSNR,BPP] = Pmain(expLevel,PatchSize,TPSNR,filename,iternum)
+%    filename = 'barbara.gif';
    outfilename = 'bar1';
 %% Global param
     global Gpar;
@@ -10,8 +10,8 @@ function [NNZD,NNZG,PSNR,BPP] = Pmain(expLevel,PatchSize,TPSNR)
     Gpar.plotReconst  = 0;
     Gpar.plotBppPie   = 0;
 %% Wavelet param
-    Wpar.pfilt = '9-7';
-    Wpar.dfilt = '9-7';%'pkva';
+    Wpar.pfilt = 'sym16';
+    Wpar.dfilt = 'sym16';%'pkva';
 %     Wpar.wavelet_name = 'sym16'; dwtmode('per','nodisp');  
     Wpar.plots = 0;
 %     Wpar.level = 6; % DONOT change for now
@@ -25,7 +25,7 @@ function [NNZD,NNZG,PSNR,BPP] = Pmain(expLevel,PatchSize,TPSNR)
     Kpar.dictBigMaxAtoms   = 2; 
     Kpar.dictSmallMaxAtoms = 2;    % (MAX = dictLen = R*pSize;)
     Kpar.trainPSNR         = Kpar.targetPSNR + 5;
-    Kpar.iternum           = 100;
+    Kpar.iternum           = iternum;
     Kpar.printInfo         = 0;
     Kpar.plots             = 0;
 %% Quantization (GAMMA,Dict)
