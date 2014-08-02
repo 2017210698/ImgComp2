@@ -46,7 +46,7 @@ end
 PSNR = inf;
 TARGET = Kpar.targetPSNR;
 iter   = 1;
-while(abs(PSNR-TARGET)>1e-2 && iter<10);
+while(abs(PSNR-TARGET)>1e-2 && iter<=Kpar.OMPREAPETNUM);
     %% GOMP (Sparse representations) 
         [GAMMA] = OMPcells(Coef,Dict,Wpar,Kpar);
 
@@ -160,29 +160,148 @@ end
         
 %% Entropy Encode (GAMMA)
 level = 6;
-bins = Qpar.GAMMAbins;
 DEFAULTBINS = 32; % keep fixed on 32/64
-countsBinsValsGAMMA      = DEFAULTBINS;
-countsBinsRowStartGAMMA  = DEFAULTBINS;
-countsBinsRowDiffGAMMA   = DEFAULTBINS;
-countsBinsColDiffGAMMA   = DEFAULTBINS;
-%     ShowHist(GAMMAdiffCol,'GAMMAdiffCol',GAMMARowStart,'GAMMARowStart',GAMMAdiffRow,'GAMMAdiffRow',bins);
-%     ShowHist(GAMMAval,'GAMMAval',GAMMAneg,'GAMMAneg',bins);
 
-[GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMAval,bins,countsBinsValsGAMMA);
-[GAMMAnegcode] = Cell2CONT(GAMMAneg);
+%***** VALS ******
+% dbstop in EntropyEncodeVals
+GAMMA       = GAMMAval;
+bins        = Qpar.GAMMAbins;
+countsBins  = DEFAULTBINS;
+    % separation version
+    [GAMMAvalcode,GAMMAvalcounts,GAMMAvallen] = EntropyEncodeVals(GAMMA,bins,countsBins);
+    % [GAMMAnegcode] = Cell2CONT(GAMMAneg);
+    totval1 =0;
+    totcnt1 =0;
+    
+    for i=1:size(GAMMAvalcode,1)
+        for j=1:size(GAMMAvalcode,2)
+            totval1 = totval1 + length(GAMMAvalcode  {i,j});
+            totcnt1 = totcnt1 + length(GAMMAvalcounts{i,j});
+        end
+    end
+    totval1 = totval1/8/2^18; %bpp
+    totcnt1 = totcnt1*5/8/2^18; %bpp
+    totlen1 = numel(GAMMAvallen)*2/2^18; %bpp
+    
+    TITLE = 'GAMMAval';
+    fprintf('\n%s sperate: val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n',TITLE,totval1,totcnt1,totlen1,totval1+totcnt1+totlen1);
+    
+    % CONT version
+    [tGAMMAvalcode,tGAMMAvalcounts,tGAMMAvallen] = EntropyEncodeValsCONT(GAMMA,bins,countsBins);
+    
+    totval11 = length(tGAMMAvalcode)/8/2^18; %bpp
+    totcnt11 = length(tGAMMAvalcounts)*5/8/2^18; %bpp
+    totlen11 = numel(tGAMMAvallen)*2/2^18; %bpp
+    fprintf('%s CONT   : val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n\n',TITLE,totval11,totcnt11,totlen11,totval11+totcnt11+totlen11);
 
-dictLen = max(DictSize(0,Kpar),DictSize(level,Kpar));% max dict len
-[GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMARowStart,dictLen,countsBinsRowStartGAMMA);
-[GAMMAdiffRowcode,GAMMAdiffRowcounts] = EntropyEncodediffRow(GAMMAdiffRow,dictLen,countsBinsRowDiffGAMMA);
 
-GAMMACOLBINS = CELLARRMAX(GAMMAdiffCol);
-[GAMMAdiffColcode,GAMMAdiffColcounts] = EntropyEncodediffCol(GAMMAdiffCol,GAMMACOLBINS,countsBinsColDiffGAMMA);
+%***** ROWS START *******
+GAMMA      = GAMMARowStart;
+[~,~,bMAX] = DictSize(level,Kpar);% max dict len
+bins       = bMAX;
+countsBins = DEFAULTBINS;
+% ShowHist(GAMMARowStart,'GAMMARowStart',bins);
+    [GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen] = EntropyEncodeVals(GAMMA,bins,countsBins);
+    % sperate version
+    totval1 =0;
+    totcnt1 =0;
+    
+    for i=1:size(GAMMAvalcode,1)
+        for j=1:size(GAMMAvalcode,2)
+            totval1 = totval1 + length(GAMMARowStartcode  {i,j});
+            totcnt1 = totcnt1 + length(GAMMARowStartcounts{i,j});
+        end
+    end
+    totval1 = totval1/8/2^18; %bpp
+    totcnt1 = totcnt1*5/8/2^18; %bpp
+    totlen1 = numel(GAMMARowStartlen)*2/2^18; %bpp
+    
+    TITLE = 'GAMMARowStart';
+    fprintf('\n%s sperate: val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n',TITLE,totval1,totcnt1,totlen1,totval1+totcnt1+totlen1);
 
+    % CONT version
+    [tGAMMARowStartcode,tGAMMARowStartcounts,tGAMMARowStartlen] = EntropyEncodeValsCONT(GAMMA,bins,countsBins);
+    totval11 = length(tGAMMARowStartcode)/8/2^18; %bpp
+    totcnt11 = length(tGAMMARowStartcounts)*5/8/2^18; %bpp
+    totlen11 = numel(tGAMMARowStartlen)*2/2^18; %bpp
+    fprintf('%s CONT   : val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n\n',TITLE,totval11,totcnt11,totlen11,totval11+totcnt11+totlen11);
+
+
+
+%***** DIFF ROWS*******
+GAMMA      = GAMMAdiffRow;  
+[~,~,bMAX] = DictSize(level,Kpar);% max dict len
+bins       = bMAX;
+countsBins = DEFAULTBINS; 
+% ShowHist(GAMMAdiffRow,'GAMMAdiffRow',bins);
+    [GAMMAdiffRowcode,GAMMAdiffRowcounts,~] = EntropyEncodeVals(GAMMA,bins,countsBins);
+    % sperate version
+    totval1 =0;
+    totcnt1 =0;
+    
+    for i=1:size(GAMMAdiffRowcode,1)
+        for j=1:size(GAMMAdiffRowcode,2)
+            totval1 = totval1 + length(GAMMAdiffRowcode  {i,j});
+            totcnt1 = totcnt1 + length(GAMMAdiffRowcounts{i,j});
+        end
+    end
+    totval1 = totval1/8/2^18; %bpp
+    totcnt1 = totcnt1*5/8/2^18; %bpp
+    totlen1 = 0;
+    
+    TITLE = 'GAMMAdiffROWS';
+    fprintf('\n%s sperate: val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n',TITLE,totval1,totcnt1,totlen1,totval1+totcnt1+totlen1);
+
+    % CONT version
+    [tGAMMAdiffRowcode,tGAMMAdiffRowcounts,~] = EntropyEncodeValsCONT(GAMMA,bins,countsBins);
+    totval11 = length(tGAMMAdiffRowcode)/8/2^18; %bpp
+    totcnt11 = length(tGAMMAdiffRowcounts)*5/8/2^18; %bpp
+    totlen11 = 0;
+    fprintf('%s CONT   : val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n\n',TITLE,totval11,totcnt11,totlen11,totval11+totcnt11+totlen11);
+
+    
+%***** DIFF COLS*******
+GAMMA      = GAMMAdiffCol;  
+bins       = CELLARRMAX(GAMMAdiffCol)+1;
+countsBins = DEFAULTBINS; 
+
+% pre process (diff col can be 0)
+for i=1:size(GAMMA,1)
+    for j=1:size(GAMMA,2)
+        GAMMA{i,j}= GAMMA{i,j}+1;
+    end
+end
+ 
+    [GAMMAdiffColcode,GAMMAdiffColcounts,~] = EntropyEncodeVals(GAMMA,bins,countsBins);
+    % sperate version
+    totval1 =0;
+    totcnt1 =0;
+    
+    for i=1:size(GAMMAdiffColcode,1)
+        for j=1:size(GAMMAdiffColcode,2)
+            totval1 = totval1 + length(GAMMAdiffColcode  {i,j});
+            totcnt1 = totcnt1 + length(GAMMAdiffColcounts{i,j});
+        end
+    end
+    totval1 = totval1/8/2^18; %bpp
+    totcnt1 = totcnt1*5/8/2^18; %bpp
+    totlen1 = 0;
+    
+    TITLE = 'GAMMAdiffCOLS';
+    fprintf('\n%s sperate: val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n',TITLE,totval1,totcnt1,totlen1,totval1+totcnt1+totlen1);
+
+    % CONT version
+    [tGAMMAdiffColcode,tGAMMAdiffColcounts,~] = EntropyEncodeValsCONT(GAMMA,bins,countsBins);
+    totval11 = length(tGAMMAdiffColcode)/8/2^18; %bpp
+    totcnt11 = length(tGAMMAdiffColcounts)*5/8/2^18; %bpp
+    totlen11 = 0;
+    fprintf('%s CONT   : val:%.4f+count:%.4f+%.4f=%.4f[bpp]\n\n',TITLE,totval11,totcnt11,totlen11,totval11+totcnt11+totlen11);
+BPP=1;return;
 if(Gpar.plotReconst)
 % reconstructoin
-    [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,bins,countsBinsValsGAMMA,level);
-    [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
+dbstop in EntropyDecodeVals
+    [GAMMAval5] = EntropyDecodeVals(GAMMAvalcode,GAMMAvalcounts,GAMMAvallen,countsBinsValsGAMMA,level);
+%     [GAMMAneg5] = CONT2Cell(GAMMAnegcode,GAMMAval5);
     [GAMMARowStart5] = EntropyDecodeVals(GAMMARowStartcode,GAMMARowStartcounts,GAMMARowStartlen,dictLen,countsBinsRowStartGAMMA,level);
     [GAMMAdiffRow5 ] = EntropyDecodediffRow(GAMMAdiffRowcode,GAMMAdiffRowcounts,GAMMARowStart5,GAMMAval5,countsBinsRowDiffGAMMA,level);
     [GAMMAdiffCol5 ] = EntropyDecodediffColGAMMA(GAMMAdiffColcode,GAMMAdiffColcounts,countsBinsColDiffGAMMA,level,Kpar);
