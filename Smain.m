@@ -2,10 +2,11 @@
 function Smain(filename)
     fprintf('Level 1 == 256x256 , Level 6 == 8x8\n');
     if(nargin<1)
-        filename = '25PSNRres';
-%         filename = '32PSNRres';
+%         filename = '25PSNRres';
+%         TITLE ='PSNR == 25';
         
-        % filename = '32PSNRres';
+        filename = '35PSNRres';
+        TITLE ='PSNR == 32';        
     end
     
     IMGS = cell(3,9);
@@ -15,11 +16,13 @@ function Smain(filename)
         NNZD = IMGS{i,1};
         NNZG = IMGS{i,2};
         BPP  = IMGS{i,3};
-         SmainTop(NNZD,NNZG,BPP,filename,i)
+        if(~isempty(NNZD))
+            SmainTop(NNZD,NNZG,BPP,TITLE,i)
+        end
     end
 end
 
-function SmainTop(NNZD,NNZG,BPP,filename,imNo)
+function SmainTop(NNZD,NNZG,BPP,TITLE,imNo)
     expLevel  = 1:size(NNZD,1);   %1:1:6
     PatchSize = (1:size(NNZD,2))+2; %3:1:8
     
@@ -76,6 +79,6 @@ function SmainTop(NNZD,NNZG,BPP,filename,imNo)
     imshow(Im,[]);
     
     
-    suptitle(sprintf('%s,im %d',filename,imNo));
+    suptitle(sprintf('%s,im %d',TITLE,imNo));
 
 end
