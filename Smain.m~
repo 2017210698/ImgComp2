@@ -12,7 +12,7 @@ function Smain(filename)
     IMGS = cell(3,9);
     load(sprintf('dataSimul/%s',filename));
     
-    for i=1:length(IMGS)
+    for i=1:1%length(IMGS)
         NNZD = IMGS{i,1};
         NNZG = IMGS{i,2};
         BPP  = IMGS{i,3};
@@ -30,8 +30,8 @@ function SmainTop(NNZD,NNZG,BPP,TITLE,imNo)
     
     % plotting
     COL1 = lines(length(expLevel));
-    m=1;n=3;
-    figure('units','normalized','outerposition',[0 0 1 1]);
+    m=1;n=4;
+    h=figure('units','normalized','outerposition',[0 0 1 1])
     legendText1 = cell(1,length(COL1));
 
     % plotting BPP
@@ -41,7 +41,6 @@ function SmainTop(NNZD,NNZG,BPP,TITLE,imNo)
         legendText1{ll}=sprintf('level %d',ll);
     end
     legend(legendText1);
-    legend('Location','Best');
     title('BPP vs PatchSize');
     xlabel('PatchSize');
     ylabel('BPP');
@@ -72,18 +71,18 @@ function SmainTop(NNZD,NNZG,BPP,TITLE,imNo)
         legendText3{ll}  = sprintf('level %d NNZTOT',ll);
     end
     legend(legendText3);
-    legend('Location','Best');
     title('NNZ TOT vs PatchSize');
     xlabel('PatchSize');
     ylabel('NNZ');
-    
-    suptitle(sprintf('%s,im %d',TITLE,imNo));
-    
+
     % plotting the corresopnding image
     
-%     subplot(m,n,4)
-    figure
+    subplot(m,n,4)
     Im = imread(sprintf('images/%d.gif',imNo));
     imshow(Im,[]);
+   
     suptitle(sprintf('%s,im %d',TITLE,imNo));
+    fullpath = sprintf('report/fig%d',imNo);
+    saveas(gcf,fullpath,'pdf');
+
 end
