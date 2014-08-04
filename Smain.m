@@ -25,10 +25,10 @@ function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,im)
         [X,Y] = SmainTOP(FEATURE_IND,activeInd,markerSize,im);
     else
         FEATURE = 11;
-        VALS    = 30:10:40;
-        im      = [1,6,2];
-        for i =1:length(VALS)-1
-            SmainTOP(FEATURE,[VALS(i),VALS(i+1)],10,im);        
+        VALS    = 30:10:80;
+        im      = [1,6];
+        for i =1:length(VALS)
+            SmainTOP(FEATURE,VALS(i),10,im);        
         end
         X=0;Y=0;
     end
