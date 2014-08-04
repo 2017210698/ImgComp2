@@ -25,10 +25,10 @@ function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,im)
         [X,Y] = SmainTOP(FEATURE_IND,activeInd,markerSize,im);
     else
         FEATURE = 11;
-        VALS    = 30:10:40;
-        im      = [1,6,2];
-        for i =1:length(VALS)-1
-            SmainTOP(FEATURE,[VALS(i),VALS(i+1)],10,im);        
+        VALS    = 20:10:80;
+        im      = 1:5;
+        for i =1:length(VALS)
+            SmainTOP(FEATURE,VALS(i),10,im);        
         end
         X=0;Y=0;
     end
@@ -168,20 +168,16 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
 
     % sperate colors by feature values
     % also speparte by image
-    BPP  = cell(1,length(ImgNo));
+    BBP  = cell(1,length(ImgNo));
     PSNR = cell(1,length(ImgNo));
     for j=1:length(ImgNo)
-        BPP {j} = NaN(length(VALS),size(X,1));
-        PSNR{j} = NaN(length(VALS),size(X,1));
+        BPP  = NaN(length(VALS),size(X,1));
+        PSNR = NaN(length(VALS),size(X,1));
         for i=1:size(X,1)
             ind  = (X(i,FEATURE)==VALS);
-            IMNOTMP = X(i,end); % imgNo
-            ImInd   = (IMNOTMP==ImgNo);
-            if(ImInd(j)==1)
-                if(max(VALS(ind)==ActiveInd) || max(ActiveInd==0))
-                    BPP {j}(ind,i) = Y(i,3);
-                    PSNR{j}(ind,i) = X(i,1);
-                end
+            if(max(VALS(ind)==ActiveInd) || max(ActiveInd==0))
+                BPP (ind,i) = Y(i,3);
+                PSNR(ind,i) = X(i,1);
             end
         end
     end
@@ -189,10 +185,8 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
     
     
     % plot values
-    for j=1:length(ImgNo)
-        for i=1:length(VALS)
-            plot(BPP{j}(i,:),PSNR{j}(i,:),'Marker',MARKERS{j},'MarkerSize',MarkerSize,'MarkerEdgeColor',map(i,:),'color',[1,1,1]); hold on;
-        end 
+    for i=1:length(VALS)
+        plot(BPP(i,:),PSNR(i,:),Marker,'color',map(i,:),'MarkerSize',MarkerSize); hold on;
     end
     labels = cell(1,length(ActiveInd));
     for i=1:length(labels)
@@ -209,12 +203,6 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
     xlim([0 0.2]);
     ylim([25 36]);
     
-    
-    ImText = '';
-    for i=1:length(ImgNo)
-        ImText = strcat(ImText,sprintf('Im:%d(%s),',ImgNo(i),MARKERS{i}));
-    end
-    
-    title(sprintf('%s, ActiveValues:%s, ActiveImg:%s',TITLE,mat2str(ActiveInd),ImText));
+    title(sprintf('%s, activeValues:%s',TITLE,mat2str(ActiveInd)));
     
 end
