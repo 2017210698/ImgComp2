@@ -1,0 +1,16 @@
+
+iternum      = 1;
+IMGNUM       = 2;
+TPSNR        = 25:1:26;
+ONLINE_TRAIN = cell(2,IMGNUM);
+
+for i=1:IMGNUM
+    filename = sprintf('images/%d.gif',i);
+    PSNRVEC = zeros(1,length(TPSNR));
+    BPPVEC  = zeros(1,length(TPSNR));
+    for p=1:length(TPSNR)
+            [PSNRVEC(p),BPPVEC(p)] = Pmain(filename,TARGET_PSNR(p),iternum);
+    end
+    ONLINE_TRAIN{1,i} = PSNRVEC; 
+    ONLINE_TRAIN{2,i} = BPPVEC; 
+end
