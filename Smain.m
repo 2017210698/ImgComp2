@@ -25,12 +25,19 @@ function [X,Y] = Smain(FEATURE_IND,activeInd,markerSize,im)
         [X,Y] = SmainTOP(FEATURE_IND,activeInd,markerSize,im);
     else
         FEATURE = 11;
-        VALS    = 30:10:80;
-        im      = [1,6];
-        for i =1:length(VALS)
-            SmainTOP(FEATURE,VALS(i),10,im);        
-        end
+        VALS    = 20:10:60;
+        im      = [1];
+            SmainTOP(FEATURE,VALS,20,im);        
         X=0;Y=0;
+        
+        
+%         FEATURE = 11;
+%         VALS    = 30:10:80;
+%         im      = [1,6];
+%         for i =1:length(VALS)
+%             SmainTOP(FEATURE,VALS(i),10,im);        
+%         end
+%         X=0;Y=0;
     end
 
 end
@@ -77,7 +84,7 @@ end
         % Patch size Small
         case 5
             FEATURE = 5;
-            VALS = 3:6;
+            VALS = 3:8;
             map = lines(length(VALS));
             TITLE = 'Color by Patch Size Small';
             paint_and_leg(X,Y,map,FEATURE,VALS,TITLE);
@@ -144,10 +151,7 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
     for i=1:length(xyBestFit)
         xyBestFit{i} = inf(2,10);
     end
-    MARKERS = {'.','o','*','x','d','v'};
-    
-    Marker = '.';
-    
+    MARKERS = {'.','*','x','d','v','o'};
     
     for i=1:length(X)
         BPPTMP = Y(i,3); % Bpp
@@ -186,26 +190,32 @@ function paint_and_leg(X,Y,map,FEATURE,VALS,TITLE)
         end
     end
     
+    % plot best fit
+    for i=1:length(ImgNo)
+        xyBestFit{i}(xyBestFit{i}==inf)=NaN;
+        plot(xyBestFit{i}(1,:),xyBestFit{i}(2,:),'Marker',MARKERS{i},'MarkerSize',10); hold on;
+    end
     
-    
+ 
     % plot values
+    valhandler = zeros(1,length(ActiveInd));
     for j=1:length(ImgNo)
         for i=1:length(VALS)
-            plot(BPP{j}(i,:),PSNR{j}(i,:),'Marker',MARKERS{j},'MarkerSize',MarkerSize,'MarkerEdgeColor',map(i,:),'color',[1,1,1]); hold on;
+            ind = VALS(i)==ActiveInd;
+            if(max(ind)==1)
+                valhandler(ind) = plot(BPP{j}(i,:),PSNR{j}(i,:),'Marker',MARKERS{j},'MarkerSize',MarkerSize,'MarkerEdgeColor',map(i,:),'color',[1,1,1]); hold on;
+            end
         end 
     end
+
+     
+    % labels
     labels = cell(1,length(ActiveInd));
     for i=1:length(labels)
         labels{i} = sprintf('%d',ActiveInd(i));
     end
-    legend(labels);
+    legend(valhandler,labels);
     
-    
-    % plot best fit
-    for i=1:length(ImgNo)
-        xyBestFit{i}(xyBestFit{i}==inf)=NaN;
-        plot(xyBestFit{i}(1,:),xyBestFit{i}(2,:),'Marker',MARKERS{i},'MarkerSize',10);
-    end
     xlim([0 0.2]);
     ylim([25 36]);
     
